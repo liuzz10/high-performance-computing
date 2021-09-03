@@ -10,19 +10,19 @@ Readme file for HW1
 
 % make
 
-% ./loop.sh
+% ./loop.sh       # this will loop over the problem size as argument 
 
 # Build -O3 instructions:
 
 % cd HW1 
 
-% cd build_o0
+% cd build_o3
 
 % cmake ../
 
 % make
 
-% ./loop.sh
+% ./loop.sh       # this will loop over the problem size as argument 
 
 
 # EOF
