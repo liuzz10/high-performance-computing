@@ -37,8 +37,8 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
    double* Ccopy = Bcopy + block_size * block_size;
 
    std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
-   for (off_t i = 0; i < num_blocks; i++) {
-      for (off_t j = 0; j < num_blocks; j++) {
+   for (off_t j = 0; j < num_blocks; j++) {
+      for (off_t i = 0; i < num_blocks; i++) {
          // copy block C[i, j] into cache
          copy_matrix_to_local(Ccopy, C, block_size, n, i, j);
          for (off_t k = 0; k < num_blocks; k++) {
@@ -46,8 +46,8 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
             copy_matrix_to_local(Acopy, A, block_size, n, i, k);
             copy_matrix_to_local(Bcopy, B, block_size, n, k, j);
             // mmul on blocks
-            for (off_t x = 0; x < block_size; x++) {
-               for (off_t y = 0; y < block_size; y++) {
+            for (off_t y = 0; y < block_size; y++) {
+               for (off_t x = 0; x < block_size; x++) {
                   for (off_t z = 0; z < block_size; z++) {
                      Ccopy[x+y*block_size] += Acopy[x+z*block_size] * Bcopy[z+y*block_size];
                   }
