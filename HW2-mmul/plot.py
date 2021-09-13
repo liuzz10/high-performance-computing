@@ -37,10 +37,6 @@ plt.xlabel('Problem size')
 plt.ylabel('MFLOP/s')
 plt.legend()
 
-
-
-
-
 plt.figure(2)
 data = problems['Mmul: BMMCO vs. CBLAS']
 flop_basic = []
@@ -70,8 +66,6 @@ plt.title('Mmul: Basic vs. CBLAS')
 plt.xlabel('Problem size')
 plt.ylabel('MFLOP/s')
 plt.legend()
-
-
 
 plt.show()
 
