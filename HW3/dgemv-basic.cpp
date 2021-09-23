@@ -11,6 +11,7 @@ const char* dgemv_desc = "Basic implementation of matrix-vector multiply.";
  * On exit, A and X maintain their input values.
  */
 void my_dgemv(int n, double* A, double* x, double* y) {
+   // Perform dgemv without optimization and record the time in high precision
    std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
    for (off_t i = 0; i < n; i++) {
       for (off_t j = 0; j < n; j++) {
