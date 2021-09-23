@@ -5,9 +5,18 @@ After downloading, cd into the main source directly, then:
 % cd build  
 % cmake ../
 
-# Set up env
+# Set up OpenMP env
 
-% export OMP_SCHEDULE="static,[number of concurrency]"
+export OMP_PLACES=threads
+export OMP_PROC_BIND=spread
+
+For static:
+% export OMP_SCHEDULE=static
+% export OMP_NUM_THREADS=[1,2,4,8,32,64]
+
+For dynamicL
+% export OMP_SCHEDULE=dynamic
+% export OMP_NUM_THREADS=[1,2,4,8,32,64]
 
 # Run code
 
