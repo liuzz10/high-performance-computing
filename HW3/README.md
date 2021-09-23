@@ -16,7 +16,7 @@ To run OpenMP version:
 To run CBLAS version:
 % ./benchmark-blas
 
-# Grad a node on Cori
+# Grab a node on Cori
 
 Login: 
 $ ssh [username]@cori.nersc.gov
