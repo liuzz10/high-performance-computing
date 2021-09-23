@@ -5,6 +5,10 @@ After downloading, cd into the main source directly, then:
 % cd build  
 % cmake ../
 
+# Set up env
+
+% export OMP_SCHEDULE="static,[number of concurrency]"
+
 # Run code
 
 To run basic version:
@@ -18,14 +22,13 @@ To run CBLAS version:
 
 # Grab a node on Cori
 
-Login: 
-$ ssh [username]@cori.nersc.gov
+Login:
+$ ssh liuzz10@cori.nersc.gov
 
 Change cmake version:
 $ module load cmake
 
 Grab an interactive KNL node:
 $ salloc --nodes 1 --qos interactive --time 01:00:00 --constraint knl --account m3930
-
 
 #eof

@@ -30,15 +30,20 @@ void my_dgemv(int n, double* A, double* x, double* y) {
    // and you may want to comment out the above parallel code block that prints out
    // nthreads and thread_id so as to not taint your timings
    
+
+
    // Record the time in high precision
    std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
    // Use OpenMP to parallel for calculating each row i of matrix A at the same time
    // Tried #pragma omp parallel for collapse(2) as well but the performance didn't improve that much
    #pragma omp parallel for
    for (off_t i = 0; i < n; i++) {
+      double ycopy;
+      ycopy = y[i];
       for (off_t j = 0; j < n; j++) {
-         y[i] += A[i*n+j] * x[j];
+         ycopy += A[i*n+j] * x[j];
       }
+      y[i] = ycopy;
    }
    std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
    std::chrono::duration<double> elapsed = end_time - start_time;
