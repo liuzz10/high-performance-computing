@@ -30,15 +30,6 @@ void my_dgemv(int n, double* A, double* x, double* y) {
    // and you may want to comment out the above parallel code block that prints out
    // nthreads and thread_id so as to not taint your timings
    
-
-   // Warmup cache
-   unsigned long long sum = 0;
-   unsigned long long length = 1000;
-   std::vector<unsigned long long> vect(length, 1);
-   for (unsigned long long x : vect) {
-      sum += x;
-   }
-
    // Record the time in high precision
    std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
    // Use OpenMP to parallel for calculating each row i of matrix A at the same time
