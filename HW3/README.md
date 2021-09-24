@@ -5,34 +5,34 @@ After downloading, cd into the main source directly, then:
 % cd build  
 % cmake ../
 
-# Set up OpenMP env
+# Run code
+
+## To run basic version:
+
+% ./benchmark-basic
+
+## To run OpenMP version, you need to set up OpenMP env first:
 
 export OMP_PLACES=threads
 export OMP_PROC_BIND=spread
 
 For static:
 % export OMP_SCHEDULE=static
-% export OMP_NUM_THREADS=[1,2,4,8,32,64]
 
 For dynamicL
 % export OMP_SCHEDULE=dynamic
-% export OMP_NUM_THREADS=[1,2,4,8,32,64]
 
-# Run code
+Run code:
+% sh ../job.in
 
-To run basic version:
-% ./benchmark-basic
+## To run CBLAS version:
 
-To run OpenMP version:
-% ./benchmark-openmp
-
-To run CBLAS version:
 % ./benchmark-blas
 
 # Grab a node on Cori
 
 Login:
-$ ssh liuzz10@cori.nersc.gov
+$ ssh [username]@cori.nersc.gov
 
 Change cmake version:
 $ module load cmake

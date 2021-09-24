@@ -29,8 +29,6 @@ void my_dgemv(int n, double* A, double* x, double* y) {
    // insert your dgemv code here. you may need to create additional parallel regions,
    // and you may want to comment out the above parallel code block that prints out
    // nthreads and thread_id so as to not taint your timings
-   
-
 
    // Record the time in high precision
    std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
@@ -38,11 +36,14 @@ void my_dgemv(int n, double* A, double* x, double* y) {
    // Tried #pragma omp parallel for collapse(2) as well but the performance didn't improve that much
    #pragma omp parallel for
    for (off_t i = 0; i < n; i++) {
+      // Create a local copy of y[i] to minimizememory access for write
       double ycopy;
       ycopy = y[i];
       for (off_t j = 0; j < n; j++) {
+         // Calculation
          ycopy += A[i*n+j] * x[j];
       }
+      // Write to the memory (only takes n times in total)
       y[i] = ycopy;
    }
    std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
