@@ -36,17 +36,19 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
    // after the matrix multiply code but before the end of the parallel code block.
 
    off_t num_blocks = n / block_size;
-   // Create copy of A, B, C
-   std::vector<double> buf(3 * block_size * block_size);
-   double* Acopy = buf.data() + 0;
-   double* Bcopy = Acopy + block_size * block_size;
-   double* Ccopy = Bcopy + block_size * block_size;
 
-   #pragma omp parallel for collapse(2)
+#pragma omp parallel
+   {
    LIKWID_MARKER_START(MY_MARKER_REGION_NAME);
+   #pragma omp for collapse(2)
    for (off_t j = 0; j < num_blocks; j++) {
       for (off_t i = 0; i < num_blocks; i++) {
-         // copy block C[i, j] into cache
+         // create local copy of A, B, C 
+	 std::vector<double> buf(3 * block_size * block_size);
+	 double* Acopy = buf.data() + 0;
+	 double* Bcopy = Acopy + block_size * block_size;
+	 double* Ccopy = Bcopy + block_size * block_size;
+	 // copy block C[i, j] into cache
          copy_matrix_to_local(Ccopy, C, block_size, n, i, j);
          for (off_t k = 0; k < num_blocks; k++) {
             // copy block A[i, k] and block B[k, j] into cache
@@ -65,4 +67,5 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
       }
    }
    LIKWID_MARKER_STOP(MY_MARKER_REGION_NAME);
+   }
 }
