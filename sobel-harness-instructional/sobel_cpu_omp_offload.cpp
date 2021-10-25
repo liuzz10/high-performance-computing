@@ -51,7 +51,7 @@ sobel_filtered_pixel(float *s, int i, int j , int width, int height, float *gx, 
    int index = 0;
    for (int x = i-1; x < i+2; x++) {
        for (int y = j-1; y < j+2; y++) {
-           if (x >= 0 && x < height && y >= 0 && y < height) {
+           if (x >= 0 && x < height && y >= 0 && y < width) {
                Gx += s[x*width+y] * gx[index];
                Gy += s[x*width+y] * gy[index];
            }
@@ -91,7 +91,7 @@ do_sobel_filtering(float *in, float *out, int dims[2])
 
 // ADD CODE HERE: you will need to add one more item to this line to map the "out" data array such that 
 // it is returned from the the device after the computation is complete. everything else here is input.
-#pragma omp target data map(to:in[0:nvals]) map(to:width) map(to:height) map(to:Gx[0:9]) map(to:Gy[0:9]) map(tofrom:out[0:nvals]])
+#pragma omp target data map(to:in[0:nvals]) map(to:width) map(to:height) map(to:Gx[0:9]) map(to:Gy[0:9]) map(tofrom:out[0:nvals])
    {
 
    // ADD CODE HERE: insert your code here that iterates over every (i,j) of input,  makes a call
