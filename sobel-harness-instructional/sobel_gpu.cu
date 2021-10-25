@@ -173,11 +173,9 @@ main (int ac, char *av[])
    cudaMemPrefetchAsync((void *)device_gy, sizeof(Gy)*sizeof(float), deviceID);
 
    // set up to run the kernel
-   int nBlocks=16, nThreadsPerBlock=256;
-
    // ADD CODE HERE: insert your code here to set a different number of thread blocks or # of threads per block
-   sobel_kernel_gpu<<<nBlocks, nThreadsPerBlock>>>(in_data_floats, out_data_floats, nvalues, data_dims[1], data_dims[0], device_gx, device_gy);
-
+ 
+   int nBlocks=std::stoi(av[1]), nThreadsPerBlock=std::stoi(av[2]);
 
    printf(" GPU configuration: %d blocks, %d threads per block \n", nBlocks, nThreadsPerBlock);
 
