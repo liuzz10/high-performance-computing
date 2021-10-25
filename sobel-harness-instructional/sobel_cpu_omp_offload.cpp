@@ -46,13 +46,19 @@ char output_fname[] = "../data/processed-raw-int8-4x-omp-offload.dat";
 float
 sobel_filtered_pixel(float *s, int i, int j , int width, int height, float *gx, float *gy)
 {
-
-   float t=0.0;
-
-   // ADD CODE HERE: add your code here for computing the sobel stencil computation at location (i,j)
-   // of input s, returning a float
-
-   return t;
+   float Gx=0.0;
+   float Gy=0.0;
+   int index = 0;
+   for (int x = i-1; x < i+2; x++) {
+       for (int y = j-1; y < j+2; y++) {
+           if (x >= 0 && x < height && y >= 0 && y < height) {
+               Gx += s[x*width+y] * gx[index];
+               Gy += s[x*width+y] * gy[index];
+           }
+           index++;
+       }              
+   }
+   return sqrt(Gx*Gx + Gy*Gy);
 }
 
 //
@@ -85,7 +91,7 @@ do_sobel_filtering(float *in, float *out, int dims[2])
 
 // ADD CODE HERE: you will need to add one more item to this line to map the "out" data array such that 
 // it is returned from the the device after the computation is complete. everything else here is input.
-#pragma omp target data map(to:in[0:nvals]) map(to:width) map(to:height) map(to:Gx[0:9]) map(to:Gy[0:9]) 
+#pragma omp target data map(to:in[0:nvals]) map(to:width) map(to:height) map(to:Gx[0:9]) map(to:Gy[0:9]) map(tofrom:out[0:nvals]])
    {
 
    // ADD CODE HERE: insert your code here that iterates over every (i,j) of input,  makes a call
@@ -94,6 +100,12 @@ do_sobel_filtering(float *in, float *out, int dims[2])
    // don't forget to include a  #pragma omp target teams parallel for around those loop(s).
    // You may also wish to consider additional clauses that might be appropriate here to increase parallelism 
    // if you are using nested loops.
+      #pragma omp target teams distribute parallel for collapse(2)
+      for (int i=0; i<height; i++) {
+         for (int j=0; j<width; j++) {
+            out[i*width+j] = sobel_filtered_pixel(in, i, j, width, height, Gx, Gy);
+         }
+      }
 
    } // pragma omp target data
 }
