@@ -59,12 +59,22 @@ __device__ float
 sobel_filtered_pixel(float *s, int i, int j , int rows, int cols, float *gx, float *gy)
 {
 
-   float t=0.0;
+   float Gx=0.0;
+   float Gy=0.0;
 
-   // ADD CODE HERE:  add your code here for computing the sobel stencil computation at location (i,j)
+   // ADD CODE HERE: add your code here for computing the sobel stencil computation at location (i,j)
    // of input s, returning a float
-
-   return t;
+   int index = 0;
+   for (int x = i-1; x < i+2; x++) {
+       for (int y = j-1; y < j+2; y++) {
+           if (x >= 0 && x < rows && y >= 0 && y < cols) {
+               Gx += s[x*cols+y] * gx[index];
+               Gy += s[x*cols+y] * gy[index];
+           }
+           index++;
+       }              
+   }
+   return sqrt(Gx*Gx + Gy*Gy);
 }
 
 //
@@ -95,6 +105,15 @@ sobel_kernel_gpu(float *s,  // source image pixels
 
    // because this is CUDA, you need to use CUDA built-in variables to compute an index and stride
    // your processing motif will be very similar here to that we used for vector add in Lab #2
+
+
+      int index = blockIdx.x * blockDim.x + threadIdx.x;
+      int stride = blockDim.x * gridDim.x;
+      for (int i=index; i<rows; i+=stride) {
+          for (int j=0; j<cols; j++) {
+              d[i*cols+j] = sobel_filtered_pixel(s, i, j, rows, cols, gx, gy);
+          }                                         
+      }                                           
 }
 
 int
@@ -154,10 +173,10 @@ main (int ac, char *av[])
    cudaMemPrefetchAsync((void *)device_gy, sizeof(Gy)*sizeof(float), deviceID);
 
    // set up to run the kernel
-   int nBlocks=1, nThreadsPerBlock=256;
+   int nBlocks=16, nThreadsPerBlock=256;
 
    // ADD CODE HERE: insert your code here to set a different number of thread blocks or # of threads per block
-
+   sobel_kernel_gpu<<<nBlocks, nThreadsPerBlock>>>(in_data_floats, out_data_floats, nvalues, data_dims[1], data_dims[0], device_gx, device_gy);
 
 
    printf(" GPU configuration: %d blocks, %d threads per block \n", nBlocks, nThreadsPerBlock);
