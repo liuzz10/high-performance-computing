@@ -4,5 +4,6 @@ for num_block in 1 4 16 64 256 1024 4096
       for num_thread in 32 64 128 256 512 1024
          do
          srun nvprof -m sm_efficiency ./sobel_gpu $num_block $num_thread
+         srun nvprof ./sobel_gpu $num_block $num_thread
          done
    done
