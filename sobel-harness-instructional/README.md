@@ -35,7 +35,18 @@ filter. The three implementations are:
 ## To check validity
 
 % module load python
+
+Correct result:
+$ python scripts/imshow.py data/correct_results_4x.dat 7112 5146
+
+Part 1:
 % python scripts/imshow.py data/processed-raw-int8-4x-cpu.dat 7112 5146
+
+Part 2:
+$ python scripts/imshow.py data/processed-raw-int8-4x-gpu.dat 7112 5146
+
+Part 3:
+$ python scripts/imshow.py data/processed-raw-int8-4x-omp-offload.dat 7112 5146
 
 # Grab a node on Cori
 
