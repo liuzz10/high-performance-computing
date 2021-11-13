@@ -432,7 +432,7 @@ recvStridedBuffer(float *dstBuf,
    // }
 
    vector <float> source;
-   source.reserve(exoectedWidth * expectedHeight);
+   source.reserve(expectedWidth * expectedHeight);
 
    MPI_Recv(source.data(), expectedWidth * expectedHeight, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
 
