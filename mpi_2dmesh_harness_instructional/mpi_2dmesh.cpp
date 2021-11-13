@@ -487,7 +487,7 @@ sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
 #endif
          // ADD YOUR CODE HERE
          // to call your sobel filtering code on each tile
-         do_sobel_filtering(t, )
+         printf("here");
          }
       }
    }
@@ -588,7 +588,7 @@ gatherAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *d, i
          }
          else if (myrank == 0)
          {
-            if (t->tilƒeRank != 0) {
+            if (t->tileRank != 0) {
                // receive a tile's buffer and copy back into the output buffer d
                recvStridedBuffer(d, global_width, global_height,
                      t->xloc, t->yloc,  // offset of this tile
