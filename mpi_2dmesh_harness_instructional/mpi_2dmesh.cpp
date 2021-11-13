@@ -387,10 +387,22 @@ sendStridedBuffer(float *srcBuf,
    // srcBuf by the values specificed by srcOffsetColumn, srcOffsetRow.
    //
 
-   for (int i=0; i < sendHeight; i++) {
-      float *sendAddress = srcBuf + srcOffsetRow * srcWidth + srcOffsetColumn;
-      MPI_Send(sendAddress, sendWidth, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
+   // Comment out sending by rows
+   // for (int i=0; i < sendHeight; i++) {
+   //    float *sendAddress = srcBuf + srcOffsetRow * srcWidth + srcOffsetColumn;
+   //    MPI_Send(sendAddress, sendWidth, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
+   // }
+
+   off_t s_offset=0, d_offset=0;
+   vector <float> d;
+   d.reserve(sendWidth * sendHeight);
+   float *source = srcBuf + srcOffsetRow * srcWidth + srcOffsetColumn;
+   for (int j=0;j<sendHeight;j++, s_offset+=srcWidth, d_offset+=sendWidth)
+   {
+      memcpy((void *)(d.data()+d_offset), (void *)(source+s_offset), sizeof(float)*sendWidth);
    }
+   
+   MPI_Send(d.data(), sendWidth * sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
 
 }
 
@@ -413,11 +425,23 @@ recvStridedBuffer(float *dstBuf,
    // at dstOffsetColumn, dstOffsetRow, and that is expectedWidth, expectedHeight in size.
    //
 
-   for (int i=0; i < expectedHeight; i++) {
-      float *receiveAddress = dstBuf + dstOffsetRow * dstWidth + dstOffsetColumn;
-      MPI_Recv(receiveAddress, expectedWidth, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
-   }
+   // Comment out sending by rows
+   // for (int i=0; i < expectedHeight; i++) {
+   //    float *receiveAddress = dstBuf + dstOffsetRow * dstWidth + dstOffsetColumn;
+   //    MPI_Recv(receiveAddress, expectedWidth, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
+   // }
 
+   vector <float> source;
+   r.reserve(sendWidth * sendHeight);
+
+   MPI_Recv(source.data(), expectedWidth * expectedHeight, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
+
+   off_t s_offset=0, d_offset=0;
+   float *dest = dstBuf + dstOffsetRow * dstWidth + dstOffsetColumn;
+   for (int j=0;j<expectedHeight;j++, s_offset+=expectedWidth, d_offset+=dstWidth)
+   {
+      memcpy((void *)(dest+d_offset), (void *)(source.data()+s_offset), sizeof(float)*expectedWidth);
+   }
 
 }
 
