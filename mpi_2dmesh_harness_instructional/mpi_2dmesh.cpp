@@ -387,6 +387,11 @@ sendStridedBuffer(float *srcBuf,
    // srcBuf by the values specificed by srcOffsetColumn, srcOffsetRow.
    //
 
+   for (int i=0; i < sendHeight; i++) {
+      float *sendAddress = srcBuf + srcOffsetRow * srcWidth + srcOffsetColumn;
+      MPI_Send(sendAddress, sendWidth, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
+   }
+
 }
 
 void
@@ -408,6 +413,12 @@ recvStridedBuffer(float *dstBuf,
    // at dstOffsetColumn, dstOffsetRow, and that is expectedWidth, expectedHeight in size.
    //
 
+   for (int i=0; i < expectedHeight; i++) {
+      float *receiveAddress = dstBuf + dstOffsetRow * dstWidth + dstOffsetColumn;
+      MPI_Recv(receiveAddress, expectedWidth, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
+   }
+
+
 }
 
 
@@ -416,6 +427,43 @@ recvStridedBuffer(float *dstBuf,
 // that performs sobel filtering
 // suggest using your cpu code from HW5, no OpenMP parallelism 
 //
+
+float
+sobel_filtered_pixel(float *s, int i, int j , int dims[], float *gx, float *gy)
+{
+   float Gx=0.0;
+   float Gy=0.0;
+
+   int cols = dims[0];
+   int rows = dims[1];
+   int index = 0;
+   for (int x = i-1; x < i+2; x++) {
+      for (int y = j-1; y < j+2; y++) {
+         if (x >= 0 && x < rows && y >= 0 && y < cols) {
+            Gx += s[x*cols+y] * gx[index];
+            Gy += s[x*cols+y] * gy[index];
+         }
+         index++;
+      }
+   }
+   return sqrt(Gx*Gx + Gy*Gy);
+}
+
+void
+do_sobel_filtering(float *in, float *out, int dims[2])
+{
+   float Gx[] = {1.0, 0.0, -1.0, 2.0, 0.0, -2.0, 1.0, 0.0, -1.0};
+   float Gy[] = {1.0, 2.0, 1.0, 0.0, 0.0, 0.0, -1.0, -2.0, -1.0};
+
+   int cols = dims[0];
+   int rows = dims[1];
+   // #pragma omp parallel for collapse(2)
+   for (int i=0; i<rows; i++) {
+      for (int j=0; j<cols; j++) {
+         out[i*cols+j] = sobel_filtered_pixel(in, i, j , dims, Gx, Gy);
+      }
+   }
+}
 
 
 void
@@ -439,6 +487,7 @@ sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
 #endif
          // ADD YOUR CODE HERE
          // to call your sobel filtering code on each tile
+         do_sobel_filtering(t, )
          }
       }
    }
@@ -539,7 +588,7 @@ gatherAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *d, i
          }
          else if (myrank == 0)
          {
-            if (t->tileRank != 0) {
+            if (t->tilƒeRank != 0) {
                // receive a tile's buffer and copy back into the output buffer d
                recvStridedBuffer(d, global_width, global_height,
                      t->xloc, t->yloc,  // offset of this tile
