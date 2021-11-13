@@ -429,20 +429,20 @@ recvStridedBuffer(float *dstBuf,
 //
 
 float
-sobel_filtered_pixel(float *s, int i, int j , int dims[], float *gx, float *gy)
+sobel_filtered_pixel(float *s, int i, int j , int cols, int rows, float *gx, float *gy)
 {
    float Gx=0.0;
    float Gy=0.0;
 
-   int cols = dims[0];
-   int rows = dims[1];
+   if (i == 0 || i >= rows - 1 || j == 0 || j >= cols - 1) {
+      return 0.0;
+   }
+
    int index = 0;
    for (int x = i-1; x < i+2; x++) {
       for (int y = j-1; y < j+2; y++) {
-         if (x >= 0 && x < rows && y >= 0 && y < cols) {
-            Gx += s[x*cols+y] * gx[index];
-            Gy += s[x*cols+y] * gy[index];
-         }
+         Gx += s[x*cols+y] * gx[index];
+         Gy += s[x*cols+y] * gy[index];
          index++;
       }
    }
@@ -450,17 +450,14 @@ sobel_filtered_pixel(float *s, int i, int j , int dims[], float *gx, float *gy)
 }
 
 void
-do_sobel_filtering(float *in, float *out, int dims[2])
+do_sobel_filtering(float *in, float *out, int cols, int rows)
 {
    float Gx[] = {1.0, 0.0, -1.0, 2.0, 0.0, -2.0, 1.0, 0.0, -1.0};
    float Gy[] = {1.0, 2.0, 1.0, 0.0, 0.0, 0.0, -1.0, -2.0, -1.0};
 
-   int cols = dims[0];
-   int rows = dims[1];
-   // #pragma omp parallel for collapse(2)
    for (int i=0; i<rows; i++) {
       for (int j=0; j<cols; j++) {
-         out[i*cols+j] = sobel_filtered_pixel(in, i, j , dims, Gx, Gy);
+         out[i*cols+j] = sobel_filtered_pixel(in, i, j, cols, rows, Gx, Gy);
       }
    }
 }
@@ -487,7 +484,7 @@ sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
 #endif
          // ADD YOUR CODE HERE
          // to call your sobel filtering code on each tile
-         printf("here");
+            do_sobel_filtering(t->inputBuffer.data(), t->outputBuffer.data(), t->width, t->height)
          }
       }
    }
