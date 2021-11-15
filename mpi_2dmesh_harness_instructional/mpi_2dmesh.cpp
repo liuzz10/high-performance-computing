@@ -40,7 +40,7 @@
 
 #include "mpi_2dmesh.hpp"  // for AppState and Tile2D class
 
-#define DEBUG_TRACE 1 
+#define DEBUG_TRACE 0 
 
 int
 parseArgs(int ac, char *av[], AppState *as)
