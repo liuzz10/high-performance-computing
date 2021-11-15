@@ -499,7 +499,7 @@ do_sobel_filtering(float *in, float *out, int cols, int rows)
 
    for (int i=1; i<rows-1; i++) {
       for (int j=1; j<cols-1; j++) {
-         out[i*cols+j] = sobel_filtered_pixel(in, i, j, cols, rows, Gx, Gy);
+         out[(i-1)*(cols-2)+(j-1)] = sobel_filtered_pixel(in, i, j, cols, rows, Gx, Gy);
       }
    }
 }
