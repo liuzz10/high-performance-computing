@@ -388,43 +388,43 @@ sendStridedBuffer(float *srcBuf,
    //
 
    // Comment out the version without Halo
-   // off_t s_offset=0, d_offset=0;
-   // vector <float> d;
-   // d.reserve(sendWidth * sendHeight);
-   // float *source = srcBuf + srcOffsetRow * srcWidth + srcOffsetColumn;
-   // for (int j=0;j<sendHeight;j++, s_offset+=srcWidth, d_offset+=sendWidth)
-   // {
-   //    memcpy((void *)(d.data()+d_offset), (void *)(source+s_offset), sizeof(float)*sendWidth);
-   // }
-   // MPI_Send(d.data(), sendWidth * sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
-
    off_t s_offset=0, d_offset=0;
-   if (fromRank == 0) {
-      vector <float> d((sendWidth+2) * (sendHeight+2), 0);
-      int startCol = srcOffsetColumn - 1;
-      int endCol = startCol + sendWidth + 2;
-      startCol = max(startCol, 0);
-      endCol = min(endCol, srcWidth-1);
-      int paddedSendWidth = endCol - startCol;
-      float *startDstPtr = d.data() + (1 ? srcOffsetColumn == 0: 0);
-      for (int row=-1; row<sendHeight+1; row++, d_offset+=sendWidth+2) {
-         int rowInSrc = srcOffsetRow + row;
-         float *sourcePtr = srcBuf + rowInSrc * srcWidth + startCol;
-         if (rowInSrc >= 0 && rowInSrc < srcHeight) {
-            memcpy((void *)(startDstPtr+d_offset), (void *)(sourcePtr), sizeof(float)*paddedSendWidth);
-         }
-      }
-      MPI_Send(d.data(), sendWidth * sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
-   } else {
-      vector <float> d;
-      d.reserve(sendWidth * sendHeight);
-      float *source = srcBuf + srcOffsetRow * srcWidth + srcOffsetColumn;
-      for (int j=0;j<sendHeight;j++, s_offset+=srcWidth, d_offset+=sendWidth)
-      {
-         memcpy((void *)(d.data()+d_offset), (void *)(source+s_offset), sizeof(float)*sendWidth);
-      }
-      MPI_Send(d.data(), sendWidth * sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
+   vector <float> d;
+   d.reserve(sendWidth * sendHeight);
+   float *source = srcBuf + srcOffsetRow * srcWidth + srcOffsetColumn;
+   for (int j=0;j<sendHeight;j++, s_offset+=srcWidth, d_offset+=sendWidth)
+   {
+      memcpy((void *)(d.data()+d_offset), (void *)(source+s_offset), sizeof(float)*sendWidth);
    }
+   MPI_Send(d.data(), sendWidth * sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
+
+//    off_t s_offset=0, d_offset=0;
+//    if (fromRank == 0) {
+//       vector <float> d((sendWidth+2) * (sendHeight+2), 0);
+//       int startCol = srcOffsetColumn - 1;
+//       int endCol = startCol + sendWidth + 2;
+//       startCol = max(startCol, 0);
+//       endCol = min(endCol, srcWidth-1);
+//       int paddedSendWidth = endCol - startCol;
+//       float *startDstPtr = d.data() + (1 ? srcOffsetColumn == 0: 0);
+//       for (int row=-1; row<sendHeight+1; row++, d_offset+=sendWidth+2) {
+//          int rowInSrc = srcOffsetRow + row;
+//          float *sourcePtr = srcBuf + rowInSrc * srcWidth + startCol;
+//          if (rowInSrc >= 0 && rowInSrc < srcHeight) {
+//             memcpy((void *)(startDstPtr+d_offset), (void *)(sourcePtr), sizeof(float)*paddedSendWidth);
+//          }
+//       }
+//       MPI_Send(d.data(), sendWidth * sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
+//    } else {
+//       vector <float> d;
+//       d.reserve(sendWidth * sendHeight);
+//       float *source = srcBuf + srcOffsetRow * srcWidth + srcOffsetColumn;
+//       for (int j=0;j<sendHeight;j++, s_offset+=srcWidth, d_offset+=sendWidth)
+//       {
+//          memcpy((void *)(d.data()+d_offset), (void *)(source+s_offset), sizeof(float)*sendWidth);
+//       }
+//       MPI_Send(d.data(), sendWidth * sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
+//    }
 
 }
 
@@ -471,9 +471,9 @@ sobel_filtered_pixel(float *s, int i, int j , int cols, int rows, float *gx, flo
    float Gx=0.0;
    float Gy=0.0;
 
-   // if (i == 0 || i >= rows - 1 || j == 0 || j >= cols - 1) {
-   //    return 0.0;
-   // }
+   if (i == 0 || i >= rows - 1 || j == 0 || j >= cols - 1) {
+      return 0.0;
+   }
 
    int index = 0;
    for (int x = i-1; x < i+2; x++) {
@@ -492,9 +492,9 @@ do_sobel_filtering(float *in, float *out, int cols, int rows)
    float Gx[] = {1.0, 0.0, -1.0, 2.0, 0.0, -2.0, 1.0, 0.0, -1.0};
    float Gy[] = {1.0, 2.0, 1.0, 0.0, 0.0, 0.0, -1.0, -2.0, -1.0};
 
-   for (int i=1; i<rows-1; i++) {
-      for (int j=1; j<cols-1; j++) {
-         out[(i-1)*(cols-2)+(j-1)] = sobel_filtered_pixel(in, i, j, cols, rows, Gx, Gy);
+   for (int i=0; i<rows; i++) {
+      for (int j=0; j<cols; j++) {
+         out[(i*cols+j] = sobel_filtered_pixel(in, i, j, cols, rows, Gx, Gy);
       }
    }
 }
@@ -521,7 +521,7 @@ sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
 #endif
          // ADD YOUR CODE HERE
          // to call your sobel filtering code on each tile
-            do_sobel_filtering(t->inputBuffer.data(), t->outputBuffer.data(), t->width+2, t->height+2);
+            do_sobel_filtering(t->inputBuffer.data(), t->outputBuffer.data(), t->width, t->height);
          }
       }
    }
@@ -545,15 +545,15 @@ scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *s, 
             int fromRank=0;
 
             // receive a tile's buffer 
-            t->inputBuffer.resize((t->width+2)*(t->height+2));
+            t->inputBuffer.resize(t->width*t->height);
             t->outputBuffer.resize(t->width*t->height);
 #if DEBUG_TRACE
             printf("scatterAllTiles() receive side:: t->tileRank=%d, myrank=%d, t->inputBuffer->size()=%d, t->outputBuffersize()=%d \n", t->tileRank, myrank, t->inputBuffer.size(), t->outputBuffer.size());
 #endif
 
-            recvStridedBuffer(t->inputBuffer.data(), t->width+2, t->height+2,
+            recvStridedBuffer(t->inputBuffer.data(), t->width, t->height,
                   0, 0,  // offset into the tile buffer: we want the whole thing
-                  t->width+2, t->height+2, // how much data coming from this tile
+                  t->width, t->height, // how much data coming from this tile
                   fromRank, myrank); 
          }
          else if (myrank == 0)
