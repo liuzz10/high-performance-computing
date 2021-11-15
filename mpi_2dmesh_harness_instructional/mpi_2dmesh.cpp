@@ -545,7 +545,7 @@ scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *s, 
             int fromRank=0;
 
             // receive a tile's buffer 
-            t->inputBuffer.resize(t->(width+2)*(t->height+2));
+            t->inputBuffer.resize((t->width+2)*(t->height+2));
             t->outputBuffer.resize(t->width*t->height);
 #if DEBUG_TRACE
             printf("scatterAllTiles() receive side:: t->tileRank=%d, myrank=%d, t->inputBuffer->size()=%d, t->outputBuffersize()=%d \n", t->tileRank, myrank, t->inputBuffer.size(), t->outputBuffer.size());
@@ -571,7 +571,7 @@ scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *s, 
                     s_offset += global_width;
                 }
 
-               sendStridedBuffer(padS, // ptr to the buffer to send
+               sendStridedBuffer(padS.data(), // ptr to the buffer to send
                      global_width+2, global_height+2,  // size of the src buffer
                      t->xloc, t->yloc, // offset into the send buffer
                      t->width+2, t->height+2,  // size of the buffer to send,
