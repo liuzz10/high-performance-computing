@@ -579,15 +579,17 @@ scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *s, 
             }
             else // rather then have rank 0 send to rank 0, just do a strided copy into a tile's input buffer
             {
-               t->inputBuffer.resize(t->width*t->height);
+               t->inputBuffer.resize((t->width+2)*(t->height+2));
                t->outputBuffer.resize(t->width*t->height);
 
                off_t s_offset=0, d_offset=0;
-               float *d = t->inputBuffer.data();
+               float *d = t->inputBuffer.data() + (t->width+2) + 1;
 
-               for (int j=0;j<t->height;j++, s_offset+=global_width, d_offset+=t->width)
+               for (int j=0;j<t->height;j++)
                {
                   memcpy((void *)(d+d_offset), (void *)(s+s_offset), sizeof(float)*t->width);
+                  s_offset+=global_width;
+                  d_offset+=t->width+2;
                }
             }
          }
