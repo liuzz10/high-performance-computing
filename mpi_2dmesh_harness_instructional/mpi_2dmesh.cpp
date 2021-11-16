@@ -398,34 +398,6 @@ sendStridedBuffer(float *srcBuf,
    }
    MPI_Send(d.data(), sendWidth * sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
 
-//    off_t s_offset=0, d_offset=0;
-//    if (fromRank == 0) {
-//       vector <float> d((sendWidth+2) * (sendHeight+2), 0);
-//       int startCol = srcOffsetColumn - 1;
-//       int endCol = startCol + sendWidth + 2;
-//       startCol = max(startCol, 0);
-//       endCol = min(endCol, srcWidth-1);
-//       int paddedSendWidth = endCol - startCol;
-//       float *startDstPtr = d.data() + (1 ? srcOffsetColumn == 0: 0);
-//       for (int row=-1; row<sendHeight+1; row++, d_offset+=sendWidth+2) {
-//          int rowInSrc = srcOffsetRow + row;
-//          float *sourcePtr = srcBuf + rowInSrc * srcWidth + startCol;
-//          if (rowInSrc >= 0 && rowInSrc < srcHeight) {
-//             memcpy((void *)(startDstPtr+d_offset), (void *)(sourcePtr), sizeof(float)*paddedSendWidth);
-//          }
-//       }
-//       MPI_Send(d.data(), sendWidth * sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
-//    } else {
-//       vector <float> d;
-//       d.reserve(sendWidth * sendHeight);
-//       float *source = srcBuf + srcOffsetRow * srcWidth + srcOffsetColumn;
-//       for (int j=0;j<sendHeight;j++, s_offset+=srcWidth, d_offset+=sendWidth)
-//       {
-//          memcpy((void *)(d.data()+d_offset), (void *)(source+s_offset), sizeof(float)*sendWidth);
-//       }
-//       MPI_Send(d.data(), sendWidth * sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
-//    }
-
 }
 
 void
