@@ -8,7 +8,8 @@
 #include <omp.h>
 #include <stdlib.h>
 
-#define TOTAL_CHANNEL 3
+#define INPUT_CHANNEL 3
+#define OUTPUT_CHANNEL 1
 #define FILTER_DIMENSION 3
 
 void fill_random(float *array, int size) {
@@ -38,7 +39,7 @@ void do_convolution(
     float *filter, 
     int channel_dimension,
     off_t channel_nvalues) {
-        for (int channel_count = 0; channel_count < TOTAL_CHANNEL; channel_count++) {
+        for (int channel_count = 0; channel_count < OUTPUT_CHANNEL; channel_count++) {
             for (int i = 0; i < channel_dimension; i++) {
                 for (int j = 0; j < channel_dimension; j++) {
                     out_data[channel_dimension * i + j] += convolve_pixel(
@@ -60,11 +61,11 @@ main (int ac, char *av[])
     int channel_dimension = atoi(av[1]);
     off_t channel_nvalues = channel_dimension * channel_dimension;
     off_t filter_nvalues = FILTER_DIMENSION * FILTER_DIMENSION;
-    float *in_data = (float *)malloc(sizeof(float) * channel_nvalues * TOTAL_CHANNEL);
-    float *out_data = (float *)malloc(sizeof(float) * channel_nvalues * TOTAL_CHANNEL);
-    float *filter = (float *)malloc(sizeof(float) * filter_nvalues * TOTAL_CHANNEL);
-    fill_random(in_data, channel_nvalues * TOTAL_CHANNEL);
-    fill_random(filter, filter_nvalues * TOTAL_CHANNEL);
+    float *in_data = (float *)malloc(sizeof(float) * channel_nvalues * INPUT_CHANNEL);
+    float *out_data = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
+    float *filter = (float *)malloc(sizeof(float) * filter_nvalues * INPUT_CHANNEL);
+    fill_random(in_data, channel_nvalues * INPUT_CHANNEL);
+    fill_random(filter, filter_nvalues * INPUT_CHANNEL);
 
     std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
 
@@ -75,7 +76,7 @@ main (int ac, char *av[])
     std::cout << " Elapsed time is : " << elapsed.count() << " " << std::endl;
     std::cout << "Each input matrix is of length:" << channel_nvalues << std::endl;
     std::cout << "Output matrix is" << std::endl;
-    for (int i=0; i<channel_nvalues*TOTAL_CHANNEL; i++) {
+    for (int i=0; i<channel_nvalues*INPUT_CHANNEL; i++) {
       std::cout << out_data[i] << std::endl;
     }
 }
