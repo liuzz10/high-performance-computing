@@ -58,7 +58,6 @@ int
 main (int ac, char *av[])
 {
     int channel_dimension = atoi(av[1]);
-    int filter_dimension = atoi(av[2]);
     off_t channel_nvalues = channel_dimension * channel_dimension;
     off_t filter_nvalues = FILTER_DIMENSION * FILTER_DIMENSION;
     float *in_data = (float *)malloc(sizeof(float) * channel_nvalues * TOTAL_CHANNEL);
@@ -74,6 +73,10 @@ main (int ac, char *av[])
     std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end_time - start_time;
     std::cout << " Elapsed time is : " << elapsed.count() << " " << std::endl;
-
+    std::cout << "Each input matrix is of length:" << channel_nvalues << std::endl;
+    std::cout << "Output matrix is" << std::endl;
+    for (int i=0; i<channel_nvalues*TOTAL_CHANNEL; i++) {
+      std::cout << out_data[i] << std::endl;
+    }
 }
 
