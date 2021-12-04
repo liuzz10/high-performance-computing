@@ -6,6 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <omp.h>
+#include <stdlib.h>
 
 #define TOTAL_CHANNEL 3
 #define FILTER_DIMENSION 3
@@ -56,8 +57,8 @@ void do_convolution(
 int
 main (int ac, char *av[])
 {
-    int channel_dimension = (int)av[1];
-    int filter_dimension = (int)av[2];
+    int channel_dimension = atoi(av[1]);
+    int filter_dimension = atoi(av[2]);
     off_t channel_nvalues = channel_dimension * channel_dimension;
     off_t filter_nvalues = FILTER_DIMENSION * FILTER_DIMENSION;
     float *in_data = (float *)malloc(sizeof(float) * channel_nvalues * TOTAL_CHANNEL);
