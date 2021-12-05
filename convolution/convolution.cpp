@@ -20,14 +20,16 @@ void fill_random(float *array, int size) {
 
 float convolve_pixel(float *s, int i, int j , int channel_dimension, float *filter, int filter_start)
 {
-    if (i == 0 || i >= channel_dimension - 1 || j == 0 || j >= channel_dimension - 1) {
-        return 0.0;
-    }
    float res = 0.0;
    for (int x_offset = -1; x_offset < 2; x_offset++) {
       for (int y_offset = -1; y_offset < 2; y_offset++) {
-        res += s[(i+x_offset)*channel_dimension+(j+y_offset)] * filter[filter_start];
-        filter_start++;
+        if (i+x_offset < 0 || i+x_offset > channel_dimension-1 || j+y_offset < 0 || j+y_offset > channel_dimension-1) {
+            filter_start++;
+            continue;
+        } else {
+            res += s[(i+x_offset)*channel_dimension+(j+y_offset)] * filter[filter_start];
+            filter_start++;
+        }
       }
    }
    return res;
