@@ -27,7 +27,6 @@ float convolve_pixel(float *s, int i, int j , int channel_dimension, float *filt
         int new_j = j+y_offset;
         if ((new_i < 0) || (new_i > (channel_dimension-1)) || (new_j < 0) || (new_j > (channel_dimension-1))) {
             filter_start++;
-            continue;
         } else {
             res += s[(channel_count*channel_dimension + new_i)*channel_dimension+new_j] * filter[filter_start];
             filter_start++;
