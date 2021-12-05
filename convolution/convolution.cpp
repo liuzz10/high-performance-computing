@@ -100,9 +100,14 @@ void im2col(
 void dgemv(int rows, int cols, float* M, float* filter, float* out) {
 // This routine performs a dgemv operation
 // out :=  filter * M
+// rows: K^2*C
+// cols: H*W
+// M: (K^2*C) * (H*W)
+// filter: (N) * (K^2*C)
+// out = N * (H*W)
    for (int j = 0; j < cols; j++) {
       for (int i = 0; i < rows; i++) {
-        out[j] += M[i * cols + j] * filter[j];
+        out[j] += filter[i] * M[i * cols + j];
       }
    }
 }
