@@ -83,10 +83,10 @@ void im2col(
                             int im2col_i = im2col_start_i + kernel_index;
                             int im2col_j = i*channel_dimension + j;
                             if (new_i == -1 || new_i == channel_dimension || new_j == -1 || new_j == channel_dimension) {
-                                im2col_data[channel_count * channel_size + (im2col_i * n_patch) + im2col_j] 
+                                im2col_data[im2col_i * n_patch + im2col_j] 
                                 = 0.0;
                             } else {
-                                im2col_data[channel_count * channel_size + (im2col_i * n_patch) + im2col_j] 
+                                im2col_data[im2col_i * n_patch + im2col_j] 
                                 = in_data[new_i*channel_dimension+new_j];
                             }
                             kernel_index++;
