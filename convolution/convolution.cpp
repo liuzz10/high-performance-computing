@@ -66,13 +66,15 @@ void im2col(
         int channel_size = FILTER_DIMENSION * FILTER_DIMENSION * n_patch;
         // im2col: convert input data to col data
         for (int channel_count = 0; channel_count < OUTPUT_CHANNEL; channel_count++) {
+            int im2col_start_i = channel_count * FILTER_DIMENSION * FILTER_DIMENSION;
             for (int i = 0; i < channel_dimension; i++) {
                 for (int j = 0; j < channel_dimension; j++) {
+                    int kernel_index = 0;
                     for (int x_offset = -1; x_offset < 2; x_offset++) {
                         for (int y_offset = -1; y_offset < 2; y_offset++) {
                             int new_i = i + x_offset;
                             int new_j = j + y_offset;
-                            int im2col_i = (x_offset+1)*FILTER_DIMENSION+(y_offset+1);
+                            int im2col_i = im2col_start_i + kernel_index;
                             int im2col_j = i*channel_dimension + j;
                             if (new_i == -1 || new_i == channel_dimension || new_j == -1 || new_j == channel_dimension) {
                                 im2col_data[channel_count * channel_size + (im2col_i * n_patch) + im2col_j] 
@@ -81,6 +83,7 @@ void im2col(
                                 im2col_data[channel_count * channel_size + (im2col_i * n_patch) + im2col_j] 
                                 = in_data[new_i*channel_dimension+new_j];
                             }
+                            kernel_index++;
                         }
                     }
                 }
@@ -104,8 +107,8 @@ void im2col_convolution(
     float *filter, 
     int channel_dimension) {
         int n_patch = channel_dimension * channel_dimension;
-        int n_cols = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
-        float *im2col_data = (float *)malloc(sizeof(float) * n_cols * n_patch);
+        int n_rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
+        float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
         // Convert image to column
         im2col(in_data, im2col_data, filter, channel_dimension);
 
