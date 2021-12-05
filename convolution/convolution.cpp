@@ -57,6 +57,12 @@ void basic_convolution(
 
 }
 
+void print(float *data, int size) {
+    for (int i = 0; i < size; i++) {
+        std::cout << "=>" << data[i] << std::endl;
+    }
+}
+
 void im2col(
     float *in_data, 
     float *im2col_data, 
@@ -109,8 +115,10 @@ void im2col_convolution(
         int n_patch = channel_dimension * channel_dimension;
         int n_rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
         float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
+        print(in_data, channel_dimension*channel_dimension*INPUT_CHANNEL);
         // Convert image to column
         im2col(in_data, im2col_data, filter, channel_dimension);
+        print(im2col_data, n_rows * n_patch);
 
         // Vector matrix multiplication
         dgemv(
@@ -136,9 +144,7 @@ void use_convolution(conv_fn_type conv_function, float *in_data, float *out_data
     std::cout << "Elapsed time is : " << elapsed.count() << " " << std::endl;
     std::cout << "Each input matrix is of length:" << channel_dimension * channel_dimension << std::endl;
     std::cout << "Output matrix is" << std::endl;
-    for (int i=0; i<channel_dimension * channel_dimension*OUTPUT_CHANNEL; i++) {
-      std::cout << out_data[i] << std::endl;
-    }
+    print(out_data, channel_dimension * channel_dimension*OUTPUT_CHANNEL);
 }
 
 // Input: number of channels, dimension of the filter squre
