@@ -118,6 +118,26 @@ void im2col_convolution(
         );
 }
 
+typedef void (*conv_fn_type)(
+    float *in_data, 
+    float *out_data, 
+    float *filter,
+    int channel_dimension,
+    off_t channel_nvalues);
+
+void use_convolution(conv_fn_type conv_function, float *in_data, float *out_data, float *filter, int channel_dimension, off_t channel_nvalues) {
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
+    conv_function(in_data, out_data, filter, channel_dimension, channel_nvalues);
+    std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end_time - start_time;
+    std::cout << "Elapsed time is : " << elapsed.count() << " " << std::endl;
+    std::cout << "Each input matrix is of length:" << channel_nvalues << std::endl;
+    std::cout << "Output matrix is" << std::endl;
+    for (int i=0; i<channel_nvalues*INPUT_CHANNEL; i++) {
+      std::cout << out_data[i] << std::endl;
+    }
+}
+
 // Input: number of channels, dimension of the filter squre
 int
 main (int ac, char *av[])
@@ -127,31 +147,13 @@ main (int ac, char *av[])
     off_t filter_nvalues = FILTER_DIMENSION * FILTER_DIMENSION;
     float *in_data = (float *)malloc(sizeof(float) * channel_nvalues * INPUT_CHANNEL);
     float *out_data1 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
+    float *out_data2 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
     float *filter = (float *)malloc(sizeof(float) * filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL);
     
     fill_random(in_data, channel_nvalues * INPUT_CHANNEL);
     fill_random(filter, filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL);
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
-    basic_convolution(in_data, out_data1, filter, channel_dimension, channel_nvalues);
-    std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = end_time - start_time;
-    std::cout << "[Basic version] Elapsed time is : " << elapsed.count() << " " << std::endl;
-    std::cout << "Each input matrix is of length:" << channel_nvalues << std::endl;
-    std::cout << "Output matrix is" << std::endl;
-    for (int i=0; i<channel_nvalues*INPUT_CHANNEL; i++) {
-      std::cout << out_data1[i] << std::endl;
-    }
 
-    float *out_data2 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
-    im2col_convolution(in_data, out_data2, filter, channel_dimension, channel_nvalues);
-    std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = end_time - start_time;
-    std::cout << "[im2col version] Elapsed time is : " << elapsed.count() << " " << std::endl;
-    std::cout << "Each input matrix is of length:" << channel_nvalues << std::endl;
-    std::cout << "Output matrix is" << std::endl;
-    for (int i=0; i<channel_nvalues*INPUT_CHANNEL; i++) {
-      std::cout << out_data2[i] << std::endl;
-    }
+    use_convolution(basic_convolution, in_data, out_data1, filter, channel_dimension, channel_nvalues);
+    use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension, channel_nvalues);
 }
 
