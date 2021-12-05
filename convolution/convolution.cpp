@@ -82,14 +82,14 @@ void im2col(
                     int kernel_index = 0;
                     for (int x_offset = -1; x_offset < FILTER_DIMENSION - 1; x_offset++) {
                         for (int y_offset = -1; y_offset < FILTER_DIMENSION - 1; y_offset++) {
-                            int new_i = in_start_i + i + x_offset;
+                            int new_i = i + x_offset;
                             int new_j = j + y_offset;
                             int im2col_i = im2col_start_i + kernel_index;
                             int im2col_j = i*channel_dimension + j;
                             if (new_i < 0 || new_i >= channel_dimension || new_j < 0 || new_j >= channel_dimension) {
                                 im2col_data[im2col_i * n_patch + im2col_j] = 0.0;
                             } else {
-                                im2col_data[im2col_i * n_patch + im2col_j] = in_data[new_i*channel_dimension+new_j];
+                                im2col_data[im2col_i * n_patch + im2col_j] = in_data[(in_start_i + new_i)*channel_dimension+new_j];
                             }
                             kernel_index++;
                         }
