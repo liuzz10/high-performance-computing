@@ -102,7 +102,7 @@ void dgemv(int rows, int cols, float* M, float* filter, float* out) {
 // out :=  filter * M
    for (int j = 0; j < cols; j++) {
       for (int i = 0; i < rows; i++) {
-        out[j] += M[i * cols + j] * filter[i];
+        out[j] += M[i * cols + j] * filter[j];
       }
    }
 }
