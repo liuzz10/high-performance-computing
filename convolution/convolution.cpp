@@ -59,7 +59,7 @@ void basic_convolution(
 
 void print(float *data, int size) {
     for (int i = 0; i < size; i++) {
-        std::cout << "=>" << data[i] << std::endl;
+        std::cout << data[i] << std::endl;
     }
 }
 
@@ -115,9 +115,11 @@ void im2col_convolution(
         int n_patch = channel_dimension * channel_dimension;
         int n_rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
         float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
+        std::cout << "input data" << std::endl;
         print(in_data, channel_dimension*channel_dimension*INPUT_CHANNEL);
         // Convert image to column
         im2col(in_data, im2col_data, filter, channel_dimension);
+        std::cout << "im2col data" << std::endl;
         print(im2col_data, n_rows * n_patch);
 
         // Vector matrix multiplication
