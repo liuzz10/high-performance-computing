@@ -71,7 +71,7 @@ void im2col(
         int n_patch = channel_dimension * channel_dimension;
         int channel_size = FILTER_DIMENSION * FILTER_DIMENSION * n_patch;
         // im2col: convert input data to col data
-        for (int channel_count = 0; channel_count < OUTPUT_CHANNEL; channel_count++) {
+        for (int channel_count = 0; channel_count < INPUT_CHANNEL; channel_count++) {
             int im2col_start_i = channel_count * FILTER_DIMENSION * FILTER_DIMENSION;
             for (int i = 0; i < channel_dimension; i++) {
                 for (int j = 0; j < channel_dimension; j++) {
