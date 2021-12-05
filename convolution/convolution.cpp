@@ -114,6 +114,24 @@ void dgemv(int rows, int cols, float* M, float* filter, float* out) {
    }
 }
 
+void dgemv_omp(int rows, int cols, float* M, float* filter, float* out) {
+// This routine performs a dgemv operation using OMP to parallel for calculating each row i of matrix M at the same time
+// out :=  filter * M
+// rows: K^2*C
+// cols: H*W
+// M: (K^2*C) * (H*W)
+// filter: (N) * (K^2*C)
+// out = N * (H*W)
+   #pragma omp parallel for
+   for (int j = 0; j < cols; j++) {
+        float temp_out = 0.0;
+        for (int i = 0; i < rows; i++) {
+            temp_out += filter[i] * M[i * cols + j];
+        }
+        out[j] = temp_out;
+   }
+}
+
 void im2col_convolution(
     float *in_data, 
     float *out_data, 
@@ -122,15 +140,40 @@ void im2col_convolution(
         int n_patch = channel_dimension * channel_dimension;
         int n_rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
         float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
-        std::cout << "input data" << std::endl;
-        print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
+        // std::cout << "input data" << std::endl;
+        // print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
         // Convert image to column
         im2col(in_data, im2col_data, filter, channel_dimension);
-        std::cout << "im2col data" << std::endl;
-        print(im2col_data, n_rows, n_patch);
+        // std::cout << "im2col data" << std::endl;
+        // print(im2col_data, n_rows, n_patch);
 
         // Vector matrix multiplication
         dgemv(
+            INPUT_CHANNEL*FILTER_DIMENSION*FILTER_DIMENSION,
+            n_patch,
+            im2col_data,
+            filter,
+            out_data
+        );
+}
+
+void im2col_omp_convolution(
+    float *in_data, 
+    float *out_data, 
+    float *filter, 
+    int channel_dimension) {
+        int n_patch = channel_dimension * channel_dimension;
+        int n_rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
+        float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
+        // std::cout << "input data" << std::endl;
+        // print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
+        // Convert image to column
+        im2col(in_data, im2col_data, filter, channel_dimension);
+        // std::cout << "im2col data" << std::endl;
+        // print(im2col_data, n_rows, n_patch);
+
+        // Vector matrix multiplication
+        dgemv_omp(
             INPUT_CHANNEL*FILTER_DIMENSION*FILTER_DIMENSION,
             n_patch,
             im2col_data,
@@ -171,7 +214,11 @@ main (int ac, char *av[])
     fill_random(in_data, channel_nvalues * INPUT_CHANNEL);
     fill_random(filter, filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL);
 
+    std::cout << "[Basic version]" << std::endl;
     use_convolution(basic_convolution, in_data, out_data1, filter, channel_dimension);
+    std::cout << "[im2col version]" << std::endl;
     use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension);
+    std::cout << "[im2col+omp version]" << std::endl;
+    use_convolution(im2col_omp_convolution, in_data, out_data2, filter, channel_dimension);
 }
 
