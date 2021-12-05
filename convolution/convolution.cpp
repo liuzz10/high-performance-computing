@@ -133,7 +133,7 @@ void use_convolution(conv_fn_type conv_function, float *in_data, float *out_data
     std::cout << "Elapsed time is : " << elapsed.count() << " " << std::endl;
     std::cout << "Each input matrix is of length:" << channel_dimension * channel_dimension << std::endl;
     std::cout << "Output matrix is" << std::endl;
-    for (int i=0; i<channel_dimension * channel_dimension*INPUT_CHANNEL; i++) {
+    for (int i=0; i<channel_dimension * channel_dimension*OUTPUT_CHANNEL; i++) {
       std::cout << out_data[i] << std::endl;
     }
 }
