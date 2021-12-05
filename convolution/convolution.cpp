@@ -76,12 +76,13 @@ void im2col(
         // im2col: convert input data to col data
         for (int channel_count = 0; channel_count < INPUT_CHANNEL; channel_count++) {
             int im2col_start_i = channel_count * FILTER_DIMENSION * FILTER_DIMENSION;
+            int in_start_i = channel_count * channel_dimension;
             for (int i = 0; i < channel_dimension; i++) {
                 for (int j = 0; j < channel_dimension; j++) {
                     int kernel_index = 0;
                     for (int x_offset = -1; x_offset < FILTER_DIMENSION - 1; x_offset++) {
                         for (int y_offset = -1; y_offset < FILTER_DIMENSION - 1; y_offset++) {
-                            int new_i = i + x_offset;
+                            int new_i = in_start_i + i + x_offset;
                             int new_j = j + y_offset;
                             int im2col_i = im2col_start_i + kernel_index;
                             int im2col_j = i*channel_dimension + j;
