@@ -41,9 +41,8 @@ void basic_convolution(
     float *in_data, 
     float *out_data, 
     float *filter, 
-    int channel_dimension,
-    off_t channel_nvalues) {
-        for (int channel_count = 0; channel_count < OUTPUT_CHANNEL; channel_count++) {
+    int channel_dimension) {
+        for (int channel_count = 0; channel_count < INPUT_CHANNEL; channel_count++) {
             for (int i = 0; i < channel_dimension; i++) {
                 for (int j = 0; j < channel_dimension; j++) {
                     out_data[channel_dimension * i + j] += convolve_pixel(
@@ -63,8 +62,7 @@ void im2col(
     float *in_data, 
     float *im2col_data, 
     float *filter, 
-    int channel_dimension,
-    off_t channel_nvalues) {
+    int channel_dimension) {
         int n_patch = channel_dimension * channel_dimension;
         int channel_size = FILTER_DIMENSION * FILTER_DIMENSION * n_patch;
         // im2col: convert input data to col data
@@ -105,13 +103,12 @@ void im2col_convolution(
     float *in_data, 
     float *out_data, 
     float *filter, 
-    int channel_dimension,
-    off_t channel_nvalues) {
+    int channel_dimension) {
         int n_patch = channel_dimension * channel_dimension;
         int n_cols = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
         float *im2col_data = (float *)malloc(sizeof(float) * n_cols * n_patch);
         // Convert image to column
-        im2col(in_data, im2col_data, filter, channel_dimension, channel_nvalues);
+        im2col(in_data, im2col_data, filter, channel_dimension);
 
         // Vector matrix multiplication
         dgemv(
@@ -127,18 +124,17 @@ typedef void (*conv_fn_type)(
     float *in_data, 
     float *out_data, 
     float *filter,
-    int channel_dimension,
-    off_t channel_nvalues);
+    int channel_dimension);
 
-void use_convolution(conv_fn_type conv_function, float *in_data, float *out_data, float *filter, int channel_dimension, off_t channel_nvalues) {
+void use_convolution(conv_fn_type conv_function, float *in_data, float *out_data, float *filter, int channel_dimension) {
     std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
-    conv_function(in_data, out_data, filter, channel_dimension, channel_nvalues);
+    conv_function(in_data, out_data, filter, channel_dimension);
     std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end_time - start_time;
     std::cout << "Elapsed time is : " << elapsed.count() << " " << std::endl;
-    std::cout << "Each input matrix is of length:" << channel_nvalues << std::endl;
+    std::cout << "Each input matrix is of length:" << channel_dimension * channel_dimension << std::endl;
     std::cout << "Output matrix is" << std::endl;
-    for (int i=0; i<channel_nvalues*INPUT_CHANNEL; i++) {
+    for (int i=0; i<channel_dimension * channel_dimension*INPUT_CHANNEL; i++) {
       std::cout << out_data[i] << std::endl;
     }
 }
@@ -158,7 +154,7 @@ main (int ac, char *av[])
     fill_random(in_data, channel_nvalues * INPUT_CHANNEL);
     fill_random(filter, filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL);
 
-    use_convolution(basic_convolution, in_data, out_data1, filter, channel_dimension, channel_nvalues);
-    use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension, channel_nvalues);
+    use_convolution(basic_convolution, in_data, out_data1, filter, channel_dimension);
+    use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension);
 }
 
