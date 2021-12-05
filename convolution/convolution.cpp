@@ -18,16 +18,18 @@ void fill_random(float *array, int size) {
     }
 }
 
-float convolve_pixel(float *s, int i, int j , int channel_dimension, float *filter, int filter_start)
+float convolve_pixel(float *s, int i, int j , int channel_dimension, float *filter, int filter_start, int channel_count)
 {
    float res = 0.0;
    for (int x_offset = -1; x_offset < 2; x_offset++) {
       for (int y_offset = -1; y_offset < 2; y_offset++) {
-        if (i+x_offset < 0 || i+x_offset > channel_dimension-1 || j+y_offset < 0 || j+y_offset > channel_dimension-1) {
+        int new_i = i+x_offset;
+        int new_j = j+y_offset;
+        if ((new_i < 0) || (new_i > (channel_dimension-1)) || (new_j < 0) || (new_j > (channel_dimension-1))) {
             filter_start++;
             continue;
         } else {
-            res += s[(i+x_offset)*channel_dimension+(j+y_offset)] * filter[filter_start];
+            res += s[(channel_count*channel_dimension + new_i)*channel_dimension+new_j] * filter[filter_start];
             filter_start++;
         }
       }
@@ -45,10 +47,11 @@ void basic_convolution(
             for (int i = 0; i < channel_dimension; i++) {
                 for (int j = 0; j < channel_dimension; j++) {
                     out_data[channel_dimension * i + j] += convolve_pixel(
-                            in_data, channel_count*channel_dimension+i, j, 
+                            in_data, i, j, 
                             channel_dimension, 
                             filter, 
-                            channel_count*FILTER_DIMENSION*FILTER_DIMENSION 
+                            channel_count*FILTER_DIMENSION*FILTER_DIMENSION,
+                            channel_count
                         );
                 }
             }
