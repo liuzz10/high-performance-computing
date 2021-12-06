@@ -57,14 +57,14 @@ void basic_convolution(
 
 }
 
-// void print(float *data, int height, int width) {
-//     for (int i = 0; i < height; i++) {
-//         for (int j = 0; j < width; j++) {
-//             std::cout << data[i * width + j] << " ";
-//         }
-//         std::cout << std::endl;
-//     }
-// }
+void print(float *data, int height, int width) {
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            std::cout << data[i * width + j] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
 
 void im2col(
     float *in_data, 
@@ -72,7 +72,6 @@ void im2col(
     float *filter, 
     int channel_dimension) {
         int n_patch = channel_dimension * channel_dimension;
-        int channel_size = FILTER_DIMENSION * FILTER_DIMENSION * n_patch;
         // im2col: convert input data to col data
         for (int channel_count = 0; channel_count < INPUT_CHANNEL; channel_count++) {
             int im2col_start_i = channel_count * FILTER_DIMENSION * FILTER_DIMENSION;
@@ -97,7 +96,36 @@ void im2col(
                 }
             }
         }
-}
+    }
+
+void im2col_optimized_locality(
+    float *in_data, 
+    float *im2col_data, 
+    float *filter, 
+    int channel_dimension) {
+        int cols = channel_dimension * channel_dimension;
+        int rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
+        // im2col: convert input data to col data
+        for (int channel_count = 0; channel_count < INPUT_CHANNEL; channel_count++) {
+            int im2col_start_i = channel_count * FILTER_DIMENSION * FILTER_DIMENSION;
+            int in_start_i = channel_count * channel_dimension;
+            for (int i = 0; i < rows; i++) {
+                int start_i = (int)i / channel_dimension;
+                int start_j = i % channel_dimension;
+                int j = 0;
+                while (j < cols) {
+                    int new_j = start_j + j % channel_dimension - 1;
+                    int new_i = start_i + (int)j / channel_dimension - 1;
+                    j++;
+                    if (new_i < 0 || new_i >= channel_dimension || new_j < 0 || new_j >= channel_dimension) {
+                        im2col_data[(im2col_start_i+i)*cols+j] = 0.0;
+                    } else {
+                        im2col_data[(im2col_start_i+i)*cols+j] = in_data[(in_start_i+new_i)*channel_dimension+new_j];
+                    }
+                }
+            }
+        }
+    }
 
 void dgemv(int rows, int cols, float* M, float* filter, float* out) {
 // This routine performs a dgemv operation
@@ -157,7 +185,7 @@ void im2col_convolution(
         );
 }
 
-void im2col_omp_convolution(
+void im2col_convolution_optimized(
     float *in_data, 
     float *out_data, 
     float *filter, 
@@ -168,9 +196,35 @@ void im2col_omp_convolution(
         // std::cout << "input data" << std::endl;
         // print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
         // Convert image to column
-        im2col(in_data, im2col_data, filter, channel_dimension);
+        im2col_optimized_locality(in_data, im2col_data, filter, channel_dimension);
         // std::cout << "im2col data" << std::endl;
         // print(im2col_data, n_rows, n_patch);
+
+        // Vector matrix multiplication
+        dgemv(
+            INPUT_CHANNEL*FILTER_DIMENSION*FILTER_DIMENSION,
+            n_patch,
+            im2col_data,
+            filter,
+            out_data
+        );
+}
+
+
+void im2col_omp_convolution(
+    float *in_data, 
+    float *out_data, 
+    float *filter, 
+    int channel_dimension) {
+        int n_patch = channel_dimension * channel_dimension;
+        int n_rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
+        float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
+        std::cout << "input data" << std::endl;
+        print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
+        // Convert image to column
+        im2col(in_data, im2col_data, filter, channel_dimension);
+        std::cout << "im2col data" << std::endl;
+        print(im2col_data, n_rows, n_patch);
 
         // Vector matrix multiplication
         dgemv_omp(
@@ -209,6 +263,7 @@ main (int ac, char *av[])
     float *in_data = (float *)malloc(sizeof(float) * channel_nvalues * INPUT_CHANNEL);
     float *out_data1 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
     float *out_data2 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
+    float *out_data3 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
     float *filter = (float *)malloc(sizeof(float) * filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL);
     
     fill_random(in_data, channel_nvalues * INPUT_CHANNEL);
@@ -218,7 +273,9 @@ main (int ac, char *av[])
     use_convolution(basic_convolution, in_data, out_data1, filter, channel_dimension);
     std::cout << "[im2col version]" << std::endl;
     use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension);
-    std::cout << "[im2col+omp version]" << std::endl;
-    use_convolution(im2col_omp_convolution, in_data, out_data2, filter, channel_dimension);
+    std::cout << "[im2col_optimized version]" << std::endl;
+    use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension);
+    // std::cout << "[im2col+omp version]" << std::endl;
+    // use_convolution(im2col_omp_convolution, in_data, out_data2, filter, channel_dimension);
 }
 
