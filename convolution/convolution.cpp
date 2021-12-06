@@ -196,7 +196,7 @@ void im2col_omp_convolution(
         // std::cout << "input data" << std::endl;
         // print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
         // Convert image to column
-        im2col(in_data, im2col_data, filter, channel_dimension);
+        im2col_convolution_optimized(in_data, im2col_data, filter, channel_dimension);
         // std::cout << "im2col data" << std::endl;
         // print(im2col_data, n_rows, n_patch);
 
@@ -218,12 +218,12 @@ void im2col_convolution_optimized(
         int n_patch = channel_dimension * channel_dimension;
         int n_rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
         float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
-        std::cout << "input data" << std::endl;
-        print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
+        // std::cout << "input data" << std::endl;
+        // print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
         // Convert image to column
         im2col_optimized_locality(in_data, im2col_data, filter, channel_dimension);
-        std::cout << "im2col data" << std::endl;
-        print(im2col_data, n_rows, n_patch);
+        // std::cout << "im2col data" << std::endl;
+        // print(im2col_data, n_rows, n_patch);
 
         // Vector matrix multiplication
         dgemv(
@@ -248,8 +248,8 @@ void use_convolution(conv_fn_type conv_function, float *in_data, float *out_data
     std::chrono::duration<double> elapsed = end_time - start_time;
     std::cout << "Elapsed time is : " << elapsed.count() << " " << std::endl;
     std::cout << "Each input matrix is of length:" << channel_dimension << std::endl;
-    std::cout << "Output matrix is" << std::endl;
-    print(out_data, channel_dimension*OUTPUT_CHANNEL, channel_dimension);
+    // std::cout << "Output matrix is" << std::endl;
+    // print(out_data, channel_dimension*OUTPUT_CHANNEL, channel_dimension);
 }
 
 // Input: number of channels, dimension of the filter squre
@@ -274,7 +274,7 @@ main (int ac, char *av[])
     use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension);
     std::cout << "[im2col_optimized version]" << std::endl;
     use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension);
-    // std::cout << "[im2col+omp version]" << std::endl;
-    // use_convolution(im2col_omp_convolution, in_data, out_data2, filter, channel_dimension);
+    std::cout << "[im2col+omp version]" << std::endl;
+    use_convolution(im2col_omp_convolution, in_data, out_data2, filter, channel_dimension);
 }
 
