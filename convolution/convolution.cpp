@@ -57,14 +57,14 @@ void basic_convolution(
 
 }
 
-void print(float *data, int height, int width) {
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            std::cout << data[i * width + j] << " ";
-        }
-        std::cout << std::endl;
-    }
-}
+// void print(float *data, int height, int width) {
+//     for (int i = 0; i < height; i++) {
+//         for (int j = 0; j < width; j++) {
+//             std::cout << data[i * width + j] << " ";
+//         }
+//         std::cout << std::endl;
+//     }
+// }
 
 void im2col(
     float *in_data, 
@@ -196,7 +196,7 @@ void use_convolution(conv_fn_type conv_function, float *in_data, float *out_data
     std::cout << "Elapsed time is : " << elapsed.count() << " " << std::endl;
     std::cout << "Each input matrix is of length:" << channel_dimension << std::endl;
     std::cout << "Output matrix is" << std::endl;
-    print(out_data, channel_dimension*OUTPUT_CHANNEL, channel_dimension);
+    // print(out_data, channel_dimension*OUTPUT_CHANNEL, channel_dimension);
 }
 
 // Input: number of channels, dimension of the filter squre
