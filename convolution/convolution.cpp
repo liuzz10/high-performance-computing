@@ -277,5 +277,10 @@ main (int ac, char *av[])
     use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension);
     std::cout << "[im2col+omp version]" << std::endl;
     use_convolution(im2col_omp_convolution, in_data, out_data4, filter, channel_dimension);
+    free(in_data);
+    free(out_data1);
+    free(out_data2);
+    free(out_data3);
+    free(out_data4);
 }
 
