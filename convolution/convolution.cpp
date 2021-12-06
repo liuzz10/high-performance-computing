@@ -193,12 +193,12 @@ void im2col_convolution_optimized(
         int n_patch = channel_dimension * channel_dimension;
         int n_rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
         float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
-        // std::cout << "input data" << std::endl;
-        // print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
+        std::cout << "input data" << std::endl;
+        print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
         // Convert image to column
         im2col_optimized_locality(in_data, im2col_data, filter, channel_dimension);
-        // std::cout << "im2col data" << std::endl;
-        // print(im2col_data, n_rows, n_patch);
+        std::cout << "im2col data" << std::endl;
+        print(im2col_data, n_rows, n_patch);
 
         // Vector matrix multiplication
         dgemv(
