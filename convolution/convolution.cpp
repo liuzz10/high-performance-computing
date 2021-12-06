@@ -104,24 +104,24 @@ void im2col_optimized_locality(
     float *filter, 
     int channel_dimension) {
         int cols = channel_dimension * channel_dimension;
-        int rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
+        int rows = FILTER_DIMENSION * FILTER_DIMENSION;
         // im2col: convert input data to col data
         for (int channel_count = 0; channel_count < INPUT_CHANNEL; channel_count++) {
             int im2col_start_i = channel_count * FILTER_DIMENSION * FILTER_DIMENSION;
             int in_start_i = channel_count * channel_dimension;
             for (int i = 0; i < rows; i++) {
-                int start_i = (int)i / channel_dimension;
-                int start_j = i % channel_dimension;
+                int start_i = (int)i / FILTER_DIMENSION;
+                int start_j = i % FILTER_DIMENSION;
                 int j = 0;
                 while (j < cols) {
-                    int new_j = start_j + j % channel_dimension - 1;
                     int new_i = start_i + (int)j / channel_dimension - 1;
-                    j++;
+                    int new_j = start_j + j % channel_dimension - 1;
                     if (new_i < 0 || new_i >= channel_dimension || new_j < 0 || new_j >= channel_dimension) {
                         im2col_data[(im2col_start_i+i)*cols+j] = 0.0;
                     } else {
                         im2col_data[(im2col_start_i+i)*cols+j] = in_data[(in_start_i+new_i)*channel_dimension+new_j];
                     }
+                    j++;
                 }
             }
         }
