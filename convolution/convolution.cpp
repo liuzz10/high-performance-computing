@@ -250,7 +250,7 @@ void use_convolution(conv_fn_type conv_function, float *in_data, float *out_data
     std::cout << "Elapsed time is : " << elapsed.count() << " " << std::endl;
     std::cout << "Each input matrix is of length:" << channel_dimension << std::endl;
     std::cout << "Output matrix is" << std::endl;
-    // print(out_data, channel_dimension*OUTPUT_CHANNEL, channel_dimension);
+    print(out_data, channel_dimension*OUTPUT_CHANNEL, channel_dimension);
 }
 
 // Input: number of channels, dimension of the filter squre
