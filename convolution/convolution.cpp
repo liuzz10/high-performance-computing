@@ -11,6 +11,7 @@
 #define INPUT_CHANNEL 3
 #define OUTPUT_CHANNEL 1
 #define FILTER_DIMENSION 3
+#define TOTAL_FILTER 10
 
 void fill_random(float *array, int size) {
     for (int i=0; i < size; i++) {
@@ -18,10 +19,19 @@ void fill_random(float *array, int size) {
     }
 }
 
-float convolve_pixel(float *s, int i, int j , int channel_dimension, float *filter, int channel_count)
+void print(float *data, int height, int width) {
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            std::cout << data[i * width + j] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+float convolve_pixel(float *s, int i, int j , int channel_dimension, float *filter, int channel_count, int filter_count)
 {
    float res = 0.0;
-   int filter_start = channel_count*FILTER_DIMENSION*FILTER_DIMENSION;
+   int filter_start = filter_count*FILTER_DIMENSION*FILTER_DIMENSION*INPUT_CHANNEL + channel_count*FILTER_DIMENSION*FILTER_DIMENSION;
    for (int x_offset = 0; x_offset < FILTER_DIMENSION; x_offset++) {
       for (int y_offset = 0; y_offset < FILTER_DIMENSION; y_offset++) {
         int new_i = i+x_offset - 1;
@@ -42,28 +52,21 @@ void basic_convolution(
     float *out_data, 
     float *filter, 
     int channel_dimension) {
-        for (int channel_count = 0; channel_count < INPUT_CHANNEL; channel_count++) {
-            for (int i = 0; i < channel_dimension; i++) {
-                for (int j = 0; j < channel_dimension; j++) {
-                    out_data[channel_dimension * i + j] += convolve_pixel(
-                            in_data, i, j, 
-                            channel_dimension, 
-                            filter, 
-                            channel_count
-                        );
+        for (int filter_count = 0; filter_count < TOTAL_FILTER; filter_count++) {
+            for (int channel_count = 0; channel_count < INPUT_CHANNEL; channel_count++) {
+                for (int i = 0; i < channel_dimension; i++) {
+                    for (int j = 0; j < channel_dimension; j++) {
+                        out_data[channel_dimension * i + j] += convolve_pixel(
+                                in_data, i, j, 
+                                channel_dimension, 
+                                filter, 
+                                channel_count,
+                                filter_count
+                            );
+                    }
                 }
             }
         }
-
-}
-
-void print(float *data, int height, int width) {
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            std::cout << data[i * width + j] << " ";
-        }
-        std::cout << std::endl;
-    }
 }
 
 void im2col(
@@ -260,23 +263,23 @@ main (int ac, char *av[])
     off_t channel_nvalues = channel_dimension * channel_dimension;
     off_t filter_nvalues = FILTER_DIMENSION * FILTER_DIMENSION;
     float *in_data = (float *)malloc(sizeof(float) * channel_nvalues * INPUT_CHANNEL);
-    float *out_data1 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
-    float *out_data2 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
-    float *out_data3 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
-    float *out_data4 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
-    float *filter = (float *)malloc(sizeof(float) * filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL);
+    float *out_data1 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL * TOTAL_FILTER);
+    float *out_data2 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL * TOTAL_FILTER);
+    float *out_data3 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL * TOTAL_FILTER);
+    float *out_data4 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL * TOTAL_FILTER);
+    float *filter = (float *)malloc(sizeof(float) * filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL * TOTAL_FILTER);
     
     fill_random(in_data, channel_nvalues * INPUT_CHANNEL);
-    fill_random(filter, filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL);
+    fill_random(filter, filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL * TOTAL_FILTER);
 
     std::cout << "[Basic version]" << std::endl;
     use_convolution(basic_convolution, in_data, out_data1, filter, channel_dimension);
-    std::cout << "[im2col version]" << std::endl;
-    use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension);
-    std::cout << "[im2col_optimized version]" << std::endl;
-    use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension);
-    std::cout << "[im2col+omp version]" << std::endl;
-    use_convolution(im2col_omp_convolution, in_data, out_data4, filter, channel_dimension);
+    // std::cout << "[im2col version]" << std::endl;
+    // use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension);
+    // std::cout << "[im2col_optimized version]" << std::endl;
+    // use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension);
+    // std::cout << "[im2col+omp version]" << std::endl;
+    // use_convolution(im2col_omp_convolution, in_data, out_data4, filter, channel_dimension);
     free(in_data);
     free(out_data1);
     free(out_data2);
