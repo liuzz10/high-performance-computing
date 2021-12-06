@@ -263,6 +263,7 @@ main (int ac, char *av[])
     float *out_data1 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
     float *out_data2 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
     float *out_data3 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
+    float *out_data4 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL);
     float *filter = (float *)malloc(sizeof(float) * filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL);
     
     fill_random(in_data, channel_nvalues * INPUT_CHANNEL);
@@ -275,6 +276,6 @@ main (int ac, char *av[])
     std::cout << "[im2col_optimized version]" << std::endl;
     use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension);
     std::cout << "[im2col+omp version]" << std::endl;
-    use_convolution(im2col_omp_convolution, in_data, out_data2, filter, channel_dimension);
+    use_convolution(im2col_omp_convolution, in_data, out_data4, filter, channel_dimension);
 }
 
