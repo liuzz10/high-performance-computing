@@ -11,7 +11,6 @@
 #define INPUT_CHANNEL 3
 #define OUTPUT_CHANNEL 1
 #define FILTER_DIMENSION 3
-#define TOTAL_FILTER 10
 
 void fill_random(float *array, int size) {
     for (int i=0; i < size; i++) {
@@ -51,8 +50,9 @@ void basic_convolution(
     float *in_data, 
     float *out_data, 
     float *filter, 
-    int channel_dimension) {
-        for (int filter_count = 0; filter_count < TOTAL_FILTER; filter_count++) {
+    int channel_dimension,
+    int total_filters) {
+        for (int filter_count = 0; filter_count < total_filters; filter_count++) {
             for (int channel_count = 0; channel_count < INPUT_CHANNEL; channel_count++) {
                 for (int i = 0; i < channel_dimension; i++) {
                     for (int j = 0; j < channel_dimension; j++) {
@@ -130,7 +130,7 @@ void im2col_optimized_locality(
         }
     }
 
-void dgemv(int rows, int cols, float* M, float* filter, float* out) {
+void dgemv(int rows, int cols, float* M, float* filter, float* out, int total_filters) {
 // This routine performs a dgemv operation
 // out :=  filter * M
 // rows: K^2*C
@@ -138,7 +138,7 @@ void dgemv(int rows, int cols, float* M, float* filter, float* out) {
 // M: (K^2*C) * (H*W)
 // filter: (N) * (K^2*C)
 // out = N * (H*W)
-   for (int i = 0; i < TOTAL_FILTER; i++) {
+   for (int i = 0; i < total_filters; i++) {
        for (int j = 0; j < cols; j++) {
            for (int k = 0; k < rows; k++) {
                out[i*cols+j] += 
@@ -149,7 +149,7 @@ void dgemv(int rows, int cols, float* M, float* filter, float* out) {
    }
 }
 
-void dgemv_omp(int rows, int cols, float* M, float* filter, float* out) {
+void dgemv_omp(int rows, int cols, float* M, float* filter, float* out, int total_filters) {
 // This routine performs a dgemv operation using OMP to parallel for calculating each row i of matrix M at the same time
 // out :=  filter * M
 // rows: K^2*C
@@ -158,7 +158,7 @@ void dgemv_omp(int rows, int cols, float* M, float* filter, float* out) {
 // filter: (N) * (K^2*C)
 // out = N * (H*W)
    #pragma omp parallel for collapse(2)
-   for (int i = 0; i < TOTAL_FILTER; i++) {
+   for (int i = 0; i < total_filters; i++) {
        for (int j = 0; j < cols; j++) {
            float temp_out = 0.0;
            for (int k = 0; k < rows; k++) {
@@ -175,7 +175,8 @@ void im2col_convolution(
     float *in_data, 
     float *out_data, 
     float *filter, 
-    int channel_dimension) {
+    int channel_dimension, 
+    int total_filters) {
         int n_patch = channel_dimension * channel_dimension;
         int n_rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
         float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
@@ -192,7 +193,8 @@ void im2col_convolution(
             n_patch,
             im2col_data,
             filter,
-            out_data
+            out_data,
+            total_filters
         );
 }
 
@@ -200,7 +202,8 @@ void im2col_convolution_optimized(
     float *in_data, 
     float *out_data, 
     float *filter, 
-    int channel_dimension) {
+    int channel_dimension,
+    int total_filters) {
         int n_patch = channel_dimension * channel_dimension;
         int n_rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
         float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
@@ -217,7 +220,8 @@ void im2col_convolution_optimized(
             n_patch,
             im2col_data,
             filter,
-            out_data
+            out_data,
+            total_filters
         );
 }
 
@@ -225,7 +229,8 @@ void im2col_omp_convolution(
     float *in_data, 
     float *out_data, 
     float *filter, 
-    int channel_dimension) {
+    int channel_dimension,
+    int total_filters) {
         int n_patch = channel_dimension * channel_dimension;
         int n_rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
         float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
@@ -242,7 +247,8 @@ void im2col_omp_convolution(
             n_patch,
             im2col_data,
             filter,
-            out_data
+            out_data,
+            total_filters
         );
 }
 
@@ -250,17 +256,19 @@ typedef void (*conv_fn_type)(
     float *in_data, 
     float *out_data, 
     float *filter,
-    int channel_dimension);
+    int channel_dimension,
+    int total_filters
+    );
 
-void use_convolution(conv_fn_type conv_function, float *in_data, float *out_data, float *filter, int channel_dimension) {
+void use_convolution(conv_fn_type conv_function, float *in_data, float *out_data, float *filter, int channel_dimension, int total_filters) {
     std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
-    conv_function(in_data, out_data, filter, channel_dimension);
+    conv_function(in_data, out_data, filter, channel_dimension, total_filters);
     std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end_time - start_time;
     std::cout << "Elapsed time is : " << elapsed.count() << " " << std::endl;
     // std::cout << "Each input matrix is of length:" << channel_dimension << std::endl;
     // std::cout << "Output matrix is" << std::endl;
-    // print(out_data, TOTAL_FILTER, channel_dimension*channel_dimension*OUTPUT_CHANNEL);
+    // print(out_data, total_filters, channel_dimension*channel_dimension*OUTPUT_CHANNEL);
 }
 
 // Input: number of channels, dimension of the filter squre
@@ -268,26 +276,27 @@ int
 main (int ac, char *av[])
 {
     int channel_dimension = atoi(av[1]);
+    int total_filters = atoi(av[2]);
     off_t channel_nvalues = channel_dimension * channel_dimension;
     off_t filter_nvalues = FILTER_DIMENSION * FILTER_DIMENSION;
     float *in_data = (float *)malloc(sizeof(float) * channel_nvalues * INPUT_CHANNEL);
-    float *out_data1 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL * TOTAL_FILTER);
-    float *out_data2 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL * TOTAL_FILTER);
-    float *out_data3 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL * TOTAL_FILTER);
-    float *out_data4 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL * TOTAL_FILTER);
-    float *filter = (float *)malloc(sizeof(float) * filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL * TOTAL_FILTER);
+    float *out_data1 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL * total_filters);
+    float *out_data2 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL * total_filters);
+    float *out_data3 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL * total_filters);
+    float *out_data4 = (float *)malloc(sizeof(float) * channel_nvalues * OUTPUT_CHANNEL * total_filters);
+    float *filter = (float *)malloc(sizeof(float) * filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL * total_filters);
     
     fill_random(in_data, channel_nvalues * INPUT_CHANNEL);
-    fill_random(filter, filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL * TOTAL_FILTER);
+    fill_random(filter, filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL * total_filters);
 
     std::cout << "[Basic version]" << std::endl;
-    use_convolution(basic_convolution, in_data, out_data1, filter, channel_dimension);
+    use_convolution(basic_convolution, in_data, out_data1, filter, channel_dimension, total_filters);
     std::cout << "[im2col version]" << std::endl;
-    use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension);
+    use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension, total_filters);
     std::cout << "[im2col_optimized version]" << std::endl;
-    use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension);
+    use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension, total_filters);
     std::cout << "[im2col+omp version]" << std::endl;
-    use_convolution(im2col_omp_convolution, in_data, out_data4, filter, channel_dimension);
+    use_convolution(im2col_omp_convolution, in_data, out_data4, filter, channel_dimension, total_filters);
     free(in_data);
     free(out_data1);
     free(out_data2);
