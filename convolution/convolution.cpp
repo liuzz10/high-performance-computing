@@ -138,10 +138,20 @@ void dgemv(int rows, int cols, float* M, float* filter, float* out) {
 // M: (K^2*C) * (H*W)
 // filter: (N) * (K^2*C)
 // out = N * (H*W)
-   for (int j = 0; j < cols; j++) {
-      for (int i = 0; i < rows; i++) {
-        out[j] += filter[i] * M[i * cols + j];
-      }
+
+//    for (int j = 0; j < cols; j++) {
+//       for (int k = 0; k < rows; k++) {
+//         out[j] += filter[k] * M[k * cols + j];
+//       }
+//    }
+   for (int i = 0; i < TOTAL_FILTER; i++) {
+       for (int j = 0; j < cols; j++) {
+           for (int k = 0; k < rows; k++) {
+               out[i*cols+j] += 
+               filter[i*FILTER_DIMENSION*FILTER_DIMENSION*INPUT_CHANNEL+k]
+                * M[k*cols+j];
+           }
+       }
    }
 }
 
@@ -274,8 +284,8 @@ main (int ac, char *av[])
 
     std::cout << "[Basic version]" << std::endl;
     use_convolution(basic_convolution, in_data, out_data1, filter, channel_dimension);
-    // std::cout << "[im2col version]" << std::endl;
-    // use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension);
+    std::cout << "[im2col version]" << std::endl;
+    use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension);
     // std::cout << "[im2col_optimized version]" << std::endl;
     // use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension);
     // std::cout << "[im2col+omp version]" << std::endl;
