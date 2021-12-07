@@ -258,9 +258,9 @@ void use_convolution(conv_fn_type conv_function, float *in_data, float *out_data
     std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end_time - start_time;
     std::cout << "Elapsed time is : " << elapsed.count() << " " << std::endl;
-    std::cout << "Each input matrix is of length:" << channel_dimension << std::endl;
-    std::cout << "Output matrix is" << std::endl;
-    print(out_data, TOTAL_FILTER, channel_dimension*channel_dimension*OUTPUT_CHANNEL);
+    // std::cout << "Each input matrix is of length:" << channel_dimension << std::endl;
+    // std::cout << "Output matrix is" << std::endl;
+    // print(out_data, TOTAL_FILTER, channel_dimension*channel_dimension*OUTPUT_CHANNEL);
 }
 
 // Input: number of channels, dimension of the filter squre
