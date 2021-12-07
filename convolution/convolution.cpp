@@ -56,7 +56,7 @@ void basic_convolution(
             for (int channel_count = 0; channel_count < INPUT_CHANNEL; channel_count++) {
                 for (int i = 0; i < channel_dimension; i++) {
                     for (int j = 0; j < channel_dimension; j++) {
-                        out_data[channel_dimension * i + j] += convolve_pixel(
+                        out_data[filter_count * channel_dimension * channel_dimension + (channel_dimension * i + j)] += convolve_pixel(
                                 in_data, i, j, 
                                 channel_dimension, 
                                 filter, 
