@@ -138,12 +138,6 @@ void dgemv(int rows, int cols, float* M, float* filter, float* out) {
 // M: (K^2*C) * (H*W)
 // filter: (N) * (K^2*C)
 // out = N * (H*W)
-
-//    for (int j = 0; j < cols; j++) {
-//       for (int k = 0; k < rows; k++) {
-//         out[j] += filter[k] * M[k * cols + j];
-//       }
-//    }
    for (int i = 0; i < TOTAL_FILTER; i++) {
        for (int j = 0; j < cols; j++) {
            for (int k = 0; k < rows; k++) {
@@ -163,13 +157,17 @@ void dgemv_omp(int rows, int cols, float* M, float* filter, float* out) {
 // M: (K^2*C) * (H*W)
 // filter: (N) * (K^2*C)
 // out = N * (H*W)
-   #pragma omp parallel for
-   for (int j = 0; j < cols; j++) {
-        float temp_out = 0.0;
-        for (int i = 0; i < rows; i++) {
-            temp_out += filter[i] * M[i * cols + j];
-        }
-        out[j] = temp_out;
+   #pragma omp parallel for collapse(2)
+   for (int i = 0; i < TOTAL_FILTER; i++) {
+       for (int j = 0; j < cols; j++) {
+           float temp_out = 0.0;
+           for (int k = 0; k < rows; k++) {
+               temp_out += 
+               filter[i*FILTER_DIMENSION*FILTER_DIMENSION*INPUT_CHANNEL+k]
+                * M[k*cols+j];
+           }
+           out[i*cols+j] = temp_out;
+       }
    }
 }
 
@@ -286,10 +284,10 @@ main (int ac, char *av[])
     use_convolution(basic_convolution, in_data, out_data1, filter, channel_dimension);
     std::cout << "[im2col version]" << std::endl;
     use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension);
-    // std::cout << "[im2col_optimized version]" << std::endl;
-    // use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension);
-    // std::cout << "[im2col+omp version]" << std::endl;
-    // use_convolution(im2col_omp_convolution, in_data, out_data4, filter, channel_dimension);
+    std::cout << "[im2col_optimized version]" << std::endl;
+    use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension);
+    std::cout << "[im2col+omp version]" << std::endl;
+    use_convolution(im2col_omp_convolution, in_data, out_data4, filter, channel_dimension);
     free(in_data);
     free(out_data1);
     free(out_data2);
