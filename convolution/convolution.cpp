@@ -352,6 +352,10 @@ main (int ac, char *av[])
     use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension, total_filters);
     std::cout << "=> [im2col_optimized version]" << std::endl;
     use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension, total_filters);
+    // This is to warm up
+    std::cout << "warmup => [im2col+omp version]" << std::endl;
+    use_convolution(im2col_omp_convolution, in_data, out_data4, filter, channel_dimension, total_filters);
+    // This is to warm up
     std::cout << "=> [im2col+omp version]" << std::endl;
     use_convolution(im2col_omp_convolution, in_data, out_data4, filter, channel_dimension, total_filters);
     std::cout << "=> [im2col_optimized+omp version]" << std::endl;
