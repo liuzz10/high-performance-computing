@@ -18,7 +18,7 @@ export OMP_NUM_THREADS=<number of threads>
 
 ## To check validity
 
-The program can print out the output and check if the output channel has correct output. Uncomment line 199 `print(out_data, channel_dimension*OUTPUT_CHANNEL, channel_dimension)` to print and check validity by passing a smaller dimension parameter.
+The program can print out the output and check if the output channel has correct output. Uncomment line `print(out_data, channel_dimension*OUTPUT_CHANNEL, channel_dimension)` to print and check validity by passing a smaller dimension parameter.
 
 # Grab a node on Cori
 
