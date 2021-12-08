@@ -210,7 +210,6 @@ void im2col_convolution_optimized(
         float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
         // std::cout << "input data" << std::endl;
         // print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
-        // Convert image to column
         std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
         im2col_optimized_locality(in_data, im2col_data, filter, channel_dimension);
         std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
@@ -245,12 +244,16 @@ void im2col_omp_convolution(
         float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
         // std::cout << "input data" << std::endl;
         // print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
-        // Convert image to column
+        std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
         im2col_optimized_locality(in_data, im2col_data, filter, channel_dimension);
+        std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end_time - start_time;
+        std::cout << "[im2col] Elapsed time is : " << elapsed.count() << " " << std::endl;
         // std::cout << "im2col data" << std::endl;
         // print(im2col_data, n_rows, n_patch);
 
         // Vector matrix multiplication
+        std::chrono::time_point<std::chrono::high_resolution_clock> start_time2 = std::chrono::high_resolution_clock::now();
         dgemm_omp(
             INPUT_CHANNEL*FILTER_DIMENSION*FILTER_DIMENSION,
             n_patch,
@@ -259,6 +262,9 @@ void im2col_omp_convolution(
             out_data,
             total_filters
         );
+        std::chrono::time_point<std::chrono::high_resolution_clock> end_time2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed2 = end_time2 - start_time2;
+        std::cout << "[gemm] Elapsed time is : " << elapsed2.count() << " " << std::endl;
 }
 
 typedef void (*conv_fn_type)(
