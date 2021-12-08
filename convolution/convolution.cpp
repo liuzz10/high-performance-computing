@@ -230,8 +230,8 @@ void im2col_convolution_optimized(
             total_filters
         );
         std::chrono::time_point<std::chrono::high_resolution_clock> end_time2 = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = end_time2 - start_time2;
-        std::cout << "[gemm] Elapsed time is : " << elapsed.count() << " " << std::endl;
+        std::chrono::duration<double> elapsed2 = end_time2 - start_time2;
+        std::cout << "[gemm] Elapsed time is : " << elapsed2.count() << " " << std::endl;
 }
 
 void im2col_omp_convolution(
