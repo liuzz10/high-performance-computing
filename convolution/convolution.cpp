@@ -245,6 +245,40 @@ void im2col_omp_convolution(
         // std::cout << "input data" << std::endl;
         // print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
         std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
+        im2col(in_data, im2col_data, filter, channel_dimension);
+        std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end_time - start_time;
+        std::cout << "[im2col] Elapsed time is : " << elapsed.count() << " " << std::endl;
+        // std::cout << "im2col data" << std::endl;
+        // print(im2col_data, n_rows, n_patch);
+
+        // Vector matrix multiplication
+        std::chrono::time_point<std::chrono::high_resolution_clock> start_time2 = std::chrono::high_resolution_clock::now();
+        dgemm_omp(
+            INPUT_CHANNEL*FILTER_DIMENSION*FILTER_DIMENSION,
+            n_patch,
+            im2col_data,
+            filter,
+            out_data,
+            total_filters
+        );
+        std::chrono::time_point<std::chrono::high_resolution_clock> end_time2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed2 = end_time2 - start_time2;
+        std::cout << "[gemm] Elapsed time is : " << elapsed2.count() << " " << std::endl;
+}
+
+void im2col_optimized_omp_convolution(
+    float *in_data, 
+    float *out_data, 
+    float *filter, 
+    int channel_dimension,
+    int total_filters) {
+        int n_patch = channel_dimension * channel_dimension;
+        int n_rows = FILTER_DIMENSION * FILTER_DIMENSION * INPUT_CHANNEL;
+        float *im2col_data = (float *)malloc(sizeof(float) * n_rows * n_patch);
+        // std::cout << "input data" << std::endl;
+        // print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
+        std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
         im2col_optimized_locality(in_data, im2col_data, filter, channel_dimension);
         std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = end_time - start_time;
@@ -304,14 +338,16 @@ main (int ac, char *av[])
     fill_random(in_data, channel_nvalues * INPUT_CHANNEL);
     fill_random(filter, filter_nvalues * INPUT_CHANNEL * OUTPUT_CHANNEL * total_filters);
 
-    std::cout << "[Basic version]" << std::endl;
+    std::cout << "=> [Basic version]" << std::endl;
     use_convolution(basic_convolution, in_data, out_data1, filter, channel_dimension, total_filters);
-    std::cout << "[im2col version]" << std::endl;
+    std::cout << "=> [im2col version]" << std::endl;
     use_convolution(im2col_convolution, in_data, out_data2, filter, channel_dimension, total_filters);
-    std::cout << "[im2col_optimized version]" << std::endl;
+    std::cout << "=> [im2col_optimized version]" << std::endl;
     use_convolution(im2col_convolution_optimized, in_data, out_data3, filter, channel_dimension, total_filters);
-    std::cout << "[im2col+omp version]" << std::endl;
+    std::cout << "=> [im2col+omp version]" << std::endl;
     use_convolution(im2col_omp_convolution, in_data, out_data4, filter, channel_dimension, total_filters);
+    std::cout << "=> [im2col_optimized+omp version]" << std::endl;
+    use_convolution(im2col_optimized_omp_convolution, in_data, out_data4, filter, channel_dimension, total_filters);
     free(in_data);
     free(out_data1);
     free(out_data2);
