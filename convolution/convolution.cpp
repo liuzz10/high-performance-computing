@@ -56,7 +56,8 @@ void basic_convolution(
             for (int channel_count = 0; channel_count < INPUT_CHANNEL; channel_count++) {
                 for (int i = 0; i < channel_dimension; i++) {
                     for (int j = 0; j < channel_dimension; j++) {
-                        out_data[filter_count * channel_dimension * channel_dimension + (channel_dimension * i + j)] += convolve_pixel(
+                        out_data[filter_count * channel_dimension * channel_dimension 
+                            + (channel_dimension * i + j)] += convolve_pixel(
                                 in_data, i, j, 
                                 channel_dimension, 
                                 filter, 
@@ -130,8 +131,8 @@ void im2col_optimized_locality(
         }
     }
 
-void dgemv(int rows, int cols, float* M, float* filter, float* out, int total_filters) {
-// This routine performs a dgemv operation
+void dgemm(int rows, int cols, float* M, float* filter, float* out, int total_filters) {
+// This routine performs a dgemm operation
 // out :=  filter * M
 // rows: K^2*C
 // cols: H*W
@@ -149,8 +150,8 @@ void dgemv(int rows, int cols, float* M, float* filter, float* out, int total_fi
    }
 }
 
-void dgemv_omp(int rows, int cols, float* M, float* filter, float* out, int total_filters) {
-// This routine performs a dgemv operation using OMP to parallel for calculating each row i of matrix M at the same time
+void dgemm_omp(int rows, int cols, float* M, float* filter, float* out, int total_filters) {
+// This routine performs a dgemm operation using OMP to parallel for calculating each row i of matrix M at the same time
 // out :=  filter * M
 // rows: K^2*C
 // cols: H*W
@@ -188,7 +189,7 @@ void im2col_convolution(
         // print(im2col_data, n_rows, n_patch);
 
         // Vector matrix multiplication
-        dgemv(
+        dgemm(
             INPUT_CHANNEL*FILTER_DIMENSION*FILTER_DIMENSION,
             n_patch,
             im2col_data,
@@ -210,12 +211,17 @@ void im2col_convolution_optimized(
         // std::cout << "input data" << std::endl;
         // print(in_data, channel_dimension*INPUT_CHANNEL, channel_dimension);
         // Convert image to column
+        std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
         im2col_optimized_locality(in_data, im2col_data, filter, channel_dimension);
+        std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end_time - start_time;
+        std::cout << "[im2col] Elapsed time is : " << elapsed.count() << " " << std::endl;
         // std::cout << "im2col data" << std::endl;
         // print(im2col_data, n_rows, n_patch);
 
         // Vector matrix multiplication
-        dgemv(
+        std::chrono::time_point<std::chrono::high_resolution_clock> start_time2 = std::chrono::high_resolution_clock::now();
+        dgemm(
             INPUT_CHANNEL*FILTER_DIMENSION*FILTER_DIMENSION,
             n_patch,
             im2col_data,
@@ -223,6 +229,9 @@ void im2col_convolution_optimized(
             out_data,
             total_filters
         );
+        std::chrono::time_point<std::chrono::high_resolution_clock> end_time2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end_time2 - start_time2;
+        std::cout << "[gemm] Elapsed time is : " << elapsed.count() << " " << std::endl;
 }
 
 void im2col_omp_convolution(
@@ -242,7 +251,7 @@ void im2col_omp_convolution(
         // print(im2col_data, n_rows, n_patch);
 
         // Vector matrix multiplication
-        dgemv_omp(
+        dgemm_omp(
             INPUT_CHANNEL*FILTER_DIMENSION*FILTER_DIMENSION,
             n_patch,
             im2col_data,
